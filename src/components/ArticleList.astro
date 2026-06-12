@@ -1,0 +1,58 @@
+---
+import { SITE } from '../consts';
+
+export interface ListEntry {
+  href: string;
+  title: string;
+  description: string;
+  category: string;
+  publishedAt: Date;
+  rating?: number;
+  brand?: string;
+}
+
+interface Props {
+  kicker: string;
+  title: string;
+  intro?: string;
+  entries: ListEntry[];
+  emptyMessage?: string;
+}
+
+const { kicker, title, intro, entries, emptyMessage = 'Tests are running — posts land here soon.' } = Astro.props;
+const sorted = [...entries].sort((a, b) => b.publishedAt.valueOf() - a.publishedAt.valueOf());
+const dateFmt = new Intl.DateTimeFormat('en-GB', { month: 'short', day: 'numeric', year: 'numeric' });
+---
+
+<section class="py-12">
+  <div class="font-data text-[11px] font-semibold uppercase tracking-[0.18em] text-umber-600">{kicker}</div>
+  <h1 class="mt-2 font-display text-4xl font-semibold tracking-tight text-ink-900">{title}</h1>
+  {intro && <p class="mt-4 max-w-[60ch] text-lg leading-relaxed text-umber-600">{intro}</p>}
+
+  {sorted.length > 0 ? (
+    <ul class="mt-10 divide-y divide-sepia-200 border-y border-sepia-200">
+      {sorted.map((e) => (
+        <li>
+          <a href={e.href} class="group flex flex-col gap-2 py-6 transition-colors hover:bg-cream-100 sm:flex-row sm:items-baseline sm:gap-6">
+            <div class="shrink-0 font-data text-[11px] uppercase tracking-wider text-umber-600 sm:w-44">
+              {e.category.replace(/-/g, ' ')}
+            </div>
+            <div class="flex-1">
+              <h2 class="font-display text-xl font-semibold leading-snug text-ink-900 group-hover:text-pine-700">{e.title}</h2>
+              <p class="mt-1 line-clamp-2 text-sm leading-relaxed text-umber-600">{e.description}</p>
+              <div class="mt-2 font-data text-[11px] text-umber-600">
+                {e.brand && <span>{e.brand} · </span>}
+                {SITE.defaultAuthor} · {dateFmt.format(e.publishedAt)}
+              </div>
+            </div>
+            {e.rating !== undefined && (
+              <div class="shrink-0 font-data text-lg font-semibold text-ink-900">{e.rating.toFixed(1)}</div>
+            )}
+          </a>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p class="mt-10 text-sm text-umber-600">{emptyMessage}</p>
+  )}
+</section>

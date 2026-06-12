@@ -1,0 +1,38 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../consts';
+---
+
+<BaseLayout title="Affiliate disclosure" description={`${SITE.name}'s affiliate and pricing disclosure.`}>
+  <section class="mx-auto max-w-3xl py-12">
+    <h1 class="font-display text-4xl font-semibold tracking-tight text-ink-900">Affiliate disclosure</h1>
+
+    <div class="mt-6 space-y-4 leading-7 text-ink-900">
+      <p>
+        <strong>Right now, links on {SITE.name} are plain product links</strong> — we earn
+        nothing when you click them. They route through our own redirect (<code>/go/…</code>)
+        purely so we can keep them current and count which recommendations are useful.
+      </p>
+      <p>
+        <strong>That will change.</strong> We intend to join affiliate programmes (including
+        the AliExpress affiliate programme). From the day any link becomes an affiliate
+        link: a clear disclosure banner appears on every page carrying such links, this page
+        will say so plainly, and we may earn a commission on qualifying purchases at no
+        extra cost to you.
+      </p>
+      <p>
+        <strong>What never changes:</strong> commission does not influence what we test, what
+        we recommend, or what we list under "what bugged us". Verdicts are written before
+        link monetisation is even looked at. We never advertise one-time or new-customer
+        promotional prices as the product's price.
+      </p>
+      <p>
+        Prices on this site are hand-checked estimates with a visible "price checked" date.
+        The store's checkout price is always the one that counts.
+      </p>
+      <p class="text-sm text-umber-600">
+        This disclosure follows UK ASA (CAP Code) and FTC guidance on affiliate marketing.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

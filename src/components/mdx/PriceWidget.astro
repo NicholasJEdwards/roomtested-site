@@ -1,0 +1,83 @@
+---
+import { gbp, getProduct, goHref, STORE_LABELS, type Store } from '../../lib/products';
+
+interface Props {
+  productId: string;
+  store?: Store;
+}
+
+const { productId, store } = Astro.props;
+const product = getProduct(productId);
+const primaryStore: Store | undefined =
+  store ?? (product ? ((Object.keys(product.links) as Store[])[0]) : undefined);
+const available = !!(product && primaryStore && product.links[primaryStore]);
+---
+
+{product ? (
+  <aside class="not-prose my-6 rounded-md border border-sepia-200 bg-cream-100 p-5">
+    <div class="mb-3 flex items-center justify-between">
+      <div class="text-[11px] font-semibold uppercase tracking-[0.12em] text-umber-600">
+        {primaryStore ? STORE_LABELS[primaryStore] : product.brand ?? product.name}
+      </div>
+    </div>
+    <div class="font-display text-4xl font-semibold tracking-tight tabular-nums text-ink-900">
+      {product.priceFromGBP !== undefined ? `from ${gbp.format(product.priceFromGBP)}` : 'Price varies'}
+    </div>
+    <div
+      class="mt-1 hidden font-data text-xs text-umber-600"
+      data-fx-hint
+      data-gbp={product.priceFromGBP}
+    ></div>
+    {product.priceCheckedAt && (
+      <div class="mt-1 font-data text-xs text-umber-600">price checked {product.priceCheckedAt}</div>
+    )}
+    {available && primaryStore && (
+      <a
+        href={goHref(product.id, primaryStore)}
+        rel="sponsored nofollow noopener"
+        target="_blank"
+        aria-label={`Check ${product.name} price at ${STORE_LABELS[primaryStore]} — opens in new tab`}
+        class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-terracotta-600 px-5 py-3 text-cream-50 transition-colors hover:bg-terracotta-700"
+      >
+        <span class="text-sm font-semibold uppercase tracking-[0.12em]">
+          Check price <span aria-hidden="true">&rarr;</span>
+        </span>
+      </a>
+    )}
+  </aside>
+) : (
+  <aside class="not-prose my-6 rounded-md border border-ochre-500 bg-cream-100 p-4 text-sm text-ink-900">
+    Missing product data for <code>{productId}</code>.
+  </aside>
+)}
+
+<script>
+  // Geo price hint: GBP stays canonical in the HTML; this only ANNOTATES with an
+  // approximate local figure (one /api/geo fetch per session, silent on failure).
+  async function annotate() {
+    const els = document.querySelectorAll<HTMLElement>('[data-fx-hint][data-gbp]');
+    if (els.length === 0) return;
+    try {
+      const cached = sessionStorage.getItem('rt-geo');
+      const info = cached
+        ? JSON.parse(cached)
+        : await (await fetch('/api/geo')).json();
+      if (!cached) sessionStorage.setItem('rt-geo', JSON.stringify(info));
+      if (!info?.rate || info.currency === 'GBP') return;
+      const fmt = new Intl.NumberFormat(undefined, {
+        style: 'currency',
+        currency: info.currency,
+        maximumFractionDigits: 0,
+      });
+      for (const el of els) {
+        const gbpValue = Number.parseFloat(el.dataset.gbp ?? '');
+        if (!Number.isFinite(gbpValue)) continue;
+        el.textContent = `≈ ${fmt.format(gbpValue * info.rate)} in your region (approx.)`;
+        el.classList.remove('hidden');
+      }
+    } catch {
+      /* hint only — never block the page */
+    }
+  }
+  annotate();
+</script>

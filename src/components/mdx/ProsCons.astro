@@ -1,0 +1,35 @@
+---
+interface Props {
+  pros: string[];
+  cons: string[];
+}
+
+const { pros, cons } = Astro.props;
+---
+
+<div class="not-prose my-8 overflow-hidden rounded-md border border-sepia-200 bg-cream-50">
+  <div class="grid sm:grid-cols-2">
+    <div class="border-b border-sepia-200 p-5 sm:border-b-0 sm:border-r">
+      <div class="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-pine-700">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+          <path d="M2 6l3 3 5-6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        What we loved
+      </div>
+      <ul class="space-y-2 font-display text-[15px] leading-snug text-ink-900">
+        {pros.map((p) => <li>— {p}</li>)}
+      </ul>
+    </div>
+    <div class="p-5">
+      <div class="mb-3 flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-brick-600">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+          <path d="M2 6h8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+        </svg>
+        What bugged us
+      </div>
+      <ul class="space-y-2 font-display text-[15px] leading-snug text-ink-900">
+        {cons.map((c) => <li>— {c}</li>)}
+      </ul>
+    </div>
+  </div>
+</div>

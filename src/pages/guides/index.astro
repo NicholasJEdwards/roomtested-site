@@ -1,0 +1,27 @@
+---
+import { getCollection } from 'astro:content';
+
+import ArticleList from '../../components/ArticleList.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const guides = await getCollection('guides', (e) => !e.data.draft || import.meta.env.DEV);
+const entries = guides.map((e) => ({
+  href: `/guides/${e.id}`,
+  title: e.data.title,
+  description: e.data.description,
+  category: e.data.category,
+  publishedAt: e.data.publishedAt,
+}));
+---
+
+<BaseLayout
+  title="Guides"
+  description="Buying guides and setup walkthroughs for smart home and desk gear, based on hands-on testing."
+>
+  <ArticleList
+    kicker="The guide bench"
+    title="Guides"
+    intro="Start here if you're shopping or setting something up — checklists and walkthroughs from real installs."
+    entries={entries}
+  />
+</BaseLayout>

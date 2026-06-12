@@ -1,0 +1,33 @@
+---
+import { getProduct, goHref, STORE_LABELS, type Store } from '../../lib/products';
+
+interface Props {
+  productId: string;
+  store?: Store;
+  label?: string;
+}
+
+const { productId, store = 'aliexpress', label } = Astro.props;
+const product = getProduct(productId);
+const available = !!product?.links[store];
+const retailer = STORE_LABELS[store];
+---
+
+{available ? (
+  <a
+    href={goHref(productId, store)}
+    rel="sponsored nofollow noopener"
+    target="_blank"
+    aria-label={`Check ${product?.name ?? productId} price at ${retailer} — opens in new tab`}
+    class="not-prose my-4 inline-flex w-full max-w-md items-center justify-between gap-3 rounded-md bg-terracotta-600 px-5 py-4 text-cream-50 transition-colors hover:bg-terracotta-700"
+  >
+    <span class="text-[11px] font-semibold uppercase tracking-[0.12em] opacity-80">{retailer}</span>
+    <span class="text-sm font-semibold uppercase tracking-[0.12em]">
+      {label ?? 'Check price'} <span aria-hidden="true">&rarr;</span>
+    </span>
+  </a>
+) : (
+  <span class="not-prose my-4 inline-block text-sm text-umber-600">
+    [Link unavailable: {productId} / {store}]
+  </span>
+)}

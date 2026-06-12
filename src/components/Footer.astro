@@ -1,0 +1,102 @@
+---
+import { SITE } from '../consts';
+import SocialIcon from './SocialIcon.astro';
+
+const year = new Date().getFullYear();
+
+type Social = {
+  name: 'x' | 'instagram' | 'facebook' | 'tiktok' | 'reddit' | 'pinterest';
+  label: string;
+  handle: string;
+  href?: string;
+};
+
+const socials: Social[] = [
+  { name: 'x', label: 'X', handle: '@RoomTested', href: 'https://x.com/RoomTested' },
+  { name: 'instagram', label: 'Instagram', handle: '@roomtested' },
+  { name: 'facebook', label: 'Facebook', handle: '/RoomTested' },
+  { name: 'tiktok', label: 'TikTok', handle: '@roomtested', href: 'https://www.tiktok.com/@roomtested' },
+  { name: 'reddit', label: 'Reddit', handle: 'u/RoomTested', href: 'https://www.reddit.com/user/RoomTested' },
+  { name: 'pinterest', label: 'Pinterest', handle: '@roomtested', href: 'https://www.pinterest.com/roomtested/' },
+];
+---
+
+<footer class="mt-20 border-t border-sepia-200 bg-cream-50">
+  <div class="mx-auto grid max-w-6xl gap-12 px-4 py-14 md:grid-cols-[1.4fr_1fr_1.2fr]">
+    <!-- About strip -->
+    <div>
+      <div class="font-display text-2xl font-semibold tracking-tight text-ink-900">{SITE.name}</div>
+      <p class="mt-3 max-w-sm font-display text-lg leading-snug text-ink-900">{SITE.tagline}</p>
+      <p class="mt-4 max-w-sm text-sm leading-relaxed text-umber-600">
+        Independent home-tech reviews by Nicholas Edwards. Every product is tested in a real
+        room — for long enough that the honeymoon phase has ended — before it's recommended.
+      </p>
+      <div class="mt-6 font-data text-[10px] uppercase tracking-[0.22em] text-umber-600">Est. {year} · Independent</div>
+    </div>
+
+    <!-- Site nav -->
+    <div>
+      <div class="font-data text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-900">Site</div>
+      <ul class="mt-4 space-y-2.5 text-sm">
+        <li><a href="/reviews" class="text-ink-900 transition-colors hover:text-pine-700">Reviews</a></li>
+        <li><a href="/guides" class="text-ink-900 transition-colors hover:text-pine-700">Guides</a></li>
+        <li><a href="/comparisons" class="text-ink-900 transition-colors hover:text-pine-700">Comparisons</a></li>
+        <li><a href="/how-we-test" class="text-ink-900 transition-colors hover:text-pine-700">How we test</a></li>
+        <li><a href="/about" class="text-ink-900 transition-colors hover:text-pine-700">About</a></li>
+        <li><a href="/contact" class="text-ink-900 transition-colors hover:text-pine-700">Contact</a></li>
+      </ul>
+    </div>
+
+    <!-- Elsewhere -->
+    <div>
+      <div class="font-data text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-900">Elsewhere</div>
+      <ul class="mt-4 space-y-3">
+        {socials.map((s) => {
+          const isSoon = !s.href;
+          const baseClass =
+            'group inline-flex items-center gap-3 font-data text-[12px] tracking-wide transition-colors';
+          return (
+            <li>
+              {isSoon ? (
+                <span class={`${baseClass} cursor-default text-umber-600/70`} aria-label={`${s.label} ${s.handle} — coming soon`}>
+                  <span class="inline-flex h-7 w-7 items-center justify-center rounded-sm border border-sepia-200 bg-cream-100 text-umber-600/80">
+                    <SocialIcon name={s.name} size={14} />
+                  </span>
+                  <span class="flex items-baseline gap-2">
+                    <span>{s.handle}</span>
+                    <span class="rounded-sm bg-cream-200 px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-[0.14em] text-umber-600">Soon</span>
+                  </span>
+                </span>
+              ) : (
+                <a
+                  href={s.href}
+                  target="_blank"
+                  rel="noopener"
+                  class={`${baseClass} text-ink-900 hover:text-pine-700`}
+                  aria-label={`${s.label} — ${s.handle}`}
+                >
+                  <span class="inline-flex h-7 w-7 items-center justify-center rounded-sm border border-sepia-200 bg-cream-50 text-ink-900 transition-colors group-hover:border-pine-700 group-hover:bg-pine-700 group-hover:text-cream-50">
+                    <SocialIcon name={s.name} size={14} />
+                  </span>
+                  <span>{s.handle}</span>
+                </a>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  </div>
+
+  <!-- Legal row -->
+  <div class="border-t border-sepia-200">
+    <div class="mx-auto flex max-w-6xl flex-col gap-3 px-4 py-5 text-xs text-umber-600 sm:flex-row sm:items-center sm:justify-between">
+      <div>&copy; {year} {SITE.name}. All rights reserved.</div>
+      <div class="flex flex-wrap gap-5">
+        <a href="/disclosure" class="transition-colors hover:text-pine-700">Affiliate disclosure</a>
+        <a href="/privacy" class="transition-colors hover:text-pine-700">Privacy</a>
+        <a href="/contact" class="transition-colors hover:text-pine-700">Contact</a>
+      </div>
+    </div>
+  </div>
+</footer>

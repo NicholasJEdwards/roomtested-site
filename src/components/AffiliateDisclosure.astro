@@ -1,0 +1,15 @@
+---
+import { SITE } from '../consts';
+---
+
+{SITE.affiliateActive && (
+  <aside
+    class="my-6 rounded-md border border-sepia-200 bg-cream-100 px-4 py-3 text-sm text-ink-900"
+    role="note"
+    aria-label="Affiliate disclosure"
+  >
+    <strong>Affiliate disclosure:</strong> some links on this page are affiliate links — we
+    may earn a commission on qualifying purchases at no extra cost to you. Commission never
+    influences what we recommend. <a class="underline underline-offset-2" href="/disclosure">Read the full policy.</a>
+  </aside>
+)}

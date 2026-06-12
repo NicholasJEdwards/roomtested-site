@@ -1,0 +1,29 @@
+---
+import { getCollection } from 'astro:content';
+
+import ArticleList from '../../components/ArticleList.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const reviews = await getCollection('reviews', (e) => !e.data.draft || import.meta.env.DEV);
+const entries = reviews.map((e) => ({
+  href: `/reviews/${e.id}`,
+  title: e.data.title,
+  description: e.data.description,
+  category: e.data.category,
+  publishedAt: e.data.publishedAt,
+  rating: e.data.rating,
+  brand: e.data.brand,
+}));
+---
+
+<BaseLayout
+  title="Reviews"
+  description="Independent reviews of smart home and desk gear — every product tested in a real room before it's recommended."
+>
+  <ArticleList
+    kicker="The reviews desk"
+    title="Reviews"
+    intro="Products we've actually lived with. Every review names what we tested, for how long, and what bugged us."
+    entries={entries}
+  />
+</BaseLayout>

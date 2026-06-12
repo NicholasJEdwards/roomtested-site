@@ -1,0 +1,28 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../consts';
+---
+
+<BaseLayout title="How we test" description={`How ${SITE.name} tests products before recommending them.`}>
+  <section class="mx-auto max-w-3xl py-12">
+    <h1 class="font-display text-4xl font-semibold tracking-tight text-ink-900">How we test</h1>
+
+    <div class="mt-6 space-y-4 leading-7 text-ink-900">
+      <p>
+        The name is the method: products get tested <em>in a real room</em> — my home and my
+        desk — not unboxed for an afternoon and returned. A review only ships once the
+        honeymoon phase has worn off.
+      </p>
+      <ul class="list-disc space-y-2 pl-5">
+        <li><strong>Bought and installed like a normal buyer.</strong> Real walls, real WiFi, real clutter.</li>
+        <li><strong>Lived with, not demoed.</strong> Each review states the testing period and what was actually used day-to-day.</li>
+        <li><strong>Dated facts.</strong> Prices carry a "price checked" date; reviews carry a "last tested" date. If firmware changes a verdict, the article gets updated, not quietly forgotten.</li>
+        <li><strong>Cons are mandatory.</strong> Every review lists what bugged us. A product with no listed flaws wasn't tested hard enough.</li>
+        <li><strong>Commission never touches verdicts.</strong> If affiliate links are present they're declared, and the ranking would read the same without them.</li>
+      </ul>
+      <p>
+        Spot something that doesn't match your experience? <a href="/contact" class="underline underline-offset-2">Tell me</a> — corrections make the site better.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

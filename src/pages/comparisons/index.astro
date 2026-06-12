@@ -1,0 +1,27 @@
+---
+import { getCollection } from 'astro:content';
+
+import ArticleList from '../../components/ArticleList.astro';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+
+const comparisons = await getCollection('comparisons', (e) => !e.data.draft || import.meta.env.DEV);
+const entries = comparisons.map((e) => ({
+  href: `/comparisons/${e.id}`,
+  title: e.data.title,
+  description: e.data.description,
+  category: e.data.category,
+  publishedAt: e.data.publishedAt,
+}));
+---
+
+<BaseLayout
+  title="Comparisons"
+  description="Head-to-head comparisons of smart home and desk gear, tested side by side in the same room."
+>
+  <ArticleList
+    kicker="Head to head"
+    title="Comparisons"
+    intro="Two or more products, same room, same tests — and a straight answer about which one to buy."
+    entries={entries}
+  />
+</BaseLayout>

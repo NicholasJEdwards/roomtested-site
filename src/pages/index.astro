@@ -1,0 +1,258 @@
+---
+import type { ImageMetadata } from 'astro';
+import { getCollection } from 'astro:content';
+
+import Hero from '../components/Hero.astro';
+import JsonLd from '../components/JsonLd.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { organizationLd, websiteLd } from '../lib/jsonld';
+import { SITE } from '../consts';
+
+type Kind = 'review' | 'guide' | 'comparison';
+type FeedEntry = {
+  id: string;
+  kind: Kind;
+  href: string;
+  title: string;
+  description: string;
+  category: string;
+  publishedAt: Date;
+  heroImage?: string;
+  heroPhoto?: ImageMetadata;
+  rating?: number;
+  brand?: string;
+};
+
+function kickerFor(entry: FeedEntry): string {
+  const cat = entry.category.replace(/-/g, ' ');
+  return `${cat} · ${entry.kind}`;
+}
+
+const published = (e: { data: { draft: boolean } }) => !e.data.draft || import.meta.env.DEV;
+
+const [reviewsRaw, guidesRaw, comparisonsRaw] = await Promise.all([
+  getCollection('reviews', published),
+  getCollection('guides', published),
+  getCollection('comparisons', published),
+]);
+
+const reviews: FeedEntry[] = reviewsRaw.map((e) => ({
+  id: e.id,
+  kind: 'review',
+  href: `/reviews/${e.id}`,
+  title: e.data.title,
+  description: e.data.description,
+  category: e.data.category,
+  publishedAt: e.data.publishedAt,
+  heroImage: e.data.heroImage,
+  heroPhoto: e.data.heroPhoto,
+  rating: e.data.rating,
+  brand: e.data.brand,
+}));
+
+const guides: FeedEntry[] = guidesRaw.map((e) => ({
+  id: e.id,
+  kind: 'guide',
+  href: `/guides/${e.id}`,
+  title: e.data.title,
+  description: e.data.description,
+  category: e.data.category,
+  publishedAt: e.data.publishedAt,
+  heroImage: e.data.heroImage,
+  heroPhoto: e.data.heroPhoto,
+}));
+
+const comparisons: FeedEntry[] = comparisonsRaw.map((e) => ({
+  id: e.id,
+  kind: 'comparison',
+  href: `/comparisons/${e.id}`,
+  title: e.data.title,
+  description: e.data.description,
+  category: e.data.category,
+  publishedAt: e.data.publishedAt,
+  heroImage: e.data.heroImage,
+  heroPhoto: e.data.heroPhoto,
+}));
+
+const all = [...reviews, ...guides, ...comparisons].sort(
+  (a, b) => b.publishedAt.valueOf() - a.publishedAt.valueOf()
+);
+
+const featured = all[0];
+const latest = all.slice(1, 7);
+const latestReviews = reviews
+  .sort((a, b) => b.publishedAt.valueOf() - a.publishedAt.valueOf())
+  .slice(0, 3);
+const latestGuides = guides
+  .sort((a, b) => b.publishedAt.valueOf() - a.publishedAt.valueOf())
+  .slice(0, 3);
+const dateFmt = new Intl.DateTimeFormat('en-GB', { month: 'short', day: 'numeric', year: 'numeric' });
+---
+
+<BaseLayout title={SITE.name} description={SITE.description}>
+  <JsonLd data={[websiteLd(), organizationLd()]} />
+
+  <!-- Masthead -->
+  <section class="border-b border-sepia-200 py-10 sm:py-14">
+    <div class="font-data text-[11px] uppercase tracking-[0.22em] text-umber-600">
+      Independent · UK · {dateFmt.format(new Date())}
+    </div>
+    <h1 class="mt-4 max-w-[22ch] font-display text-5xl font-semibold leading-[1.05] tracking-tight text-ink-900 sm:text-6xl">
+      {SITE.tagline}
+    </h1>
+    <p class="mt-5 max-w-[56ch] font-display text-xl leading-relaxed text-ink-900">
+      Independent reviews, guides, and head-to-heads of smart home and desk gear by
+      Nicholas Edwards — every product tested in a real room, for long enough that the
+      honeymoon phase has ended.
+    </p>
+    <div class="mt-8 flex flex-wrap items-center gap-4">
+      <a
+        href={featured ? featured.href : '/reviews'}
+        class="inline-flex items-center gap-2 rounded-md bg-terracotta-600 px-5 py-3 text-cream-50 transition-colors hover:bg-terracotta-700"
+      >
+        <span class="text-sm font-semibold uppercase tracking-[0.12em]">
+          {featured ? 'Read the latest' : 'Browse reviews'} <span aria-hidden="true">&rarr;</span>
+        </span>
+      </a>
+      <a href="/how-we-test" class="text-sm font-semibold uppercase tracking-[0.12em] text-pine-700 hover:text-pine-500">
+        How we test <span aria-hidden="true">&rarr;</span>
+      </a>
+    </div>
+  </section>
+
+  {featured && (
+    <section class="border-b border-sepia-200 py-12">
+      <div class="font-data text-[11px] font-semibold uppercase tracking-[0.18em] text-umber-600">The lead</div>
+      <a href={featured.href} class="mt-4 grid gap-6 sm:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+        <div class="overflow-hidden rounded-md border border-sepia-200 bg-cream-100">
+          <Hero
+            photo={featured.heroPhoto}
+            src={featured.heroImage ?? `/cards/${featured.kind}s/${featured.id}/og.png`}
+            alt={featured.title}
+            priority
+            sizes="(min-width: 1024px) 700px, (min-width: 640px) 60vw, 100vw"
+            class="block aspect-[16/9] w-full object-cover"
+          />
+        </div>
+        <div class="flex flex-col justify-center">
+          <div class="font-data text-[10px] font-semibold uppercase tracking-[0.2em] text-terracotta-600">{kickerFor(featured)}</div>
+          <h2 class="mt-3 font-display text-3xl font-semibold leading-tight tracking-tight text-ink-900 sm:text-4xl">
+            {featured.title}
+          </h2>
+          <p class="mt-4 font-display text-lg leading-relaxed text-ink-900">{featured.description}</p>
+          <div class="mt-5 flex items-center gap-4 font-data text-xs text-umber-600">
+            <span>{SITE.defaultAuthor}</span>
+            <span aria-hidden="true">·</span>
+            <span>{dateFmt.format(featured.publishedAt)}</span>
+            {featured.rating !== undefined && (
+              <>
+                <span aria-hidden="true">·</span>
+                <span class="font-semibold text-ink-900">{featured.rating.toFixed(1)}/5</span>
+              </>
+            )}
+          </div>
+        </div>
+      </a>
+    </section>
+  )}
+
+  <!-- Latest across all collections -->
+  <section class="border-b border-sepia-200 py-12">
+    <div class="flex items-baseline justify-between">
+      <div>
+        <div class="font-data text-[11px] font-semibold uppercase tracking-[0.18em] text-umber-600">Latest from the room</div>
+        <h2 class="mt-2 font-display text-3xl font-semibold tracking-tight text-ink-900">What's new</h2>
+      </div>
+      <a href="/reviews" class="hidden font-data text-[11px] font-semibold uppercase tracking-[0.18em] text-pine-700 hover:text-pine-500 sm:block">
+        All reviews <span aria-hidden="true">&rarr;</span>
+      </a>
+    </div>
+    {latest.length > 0 ? (
+      <div class="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+        {latest.map((e) => (
+          <a href={e.href} class="group block">
+            <div class="overflow-hidden rounded-md border border-sepia-200 bg-cream-100">
+              <Hero
+                photo={e.heroPhoto}
+                src={e.heroImage ?? `/cards/${e.kind}s/${e.id}/og.png`}
+                alt={e.title}
+                sizes="(min-width: 1024px) 380px, (min-width: 640px) 50vw, 100vw"
+                class="block aspect-[16/9] w-full object-cover transition-transform group-hover:scale-[1.02]"
+              />
+            </div>
+            <div class="mt-4 font-data text-[10px] font-semibold uppercase tracking-[0.2em] text-terracotta-600">{kickerFor(e)}</div>
+            <h3 class="mt-2 font-display text-xl font-semibold leading-snug text-ink-900 group-hover:text-pine-700">{e.title}</h3>
+            <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-ink-900">{e.description}</p>
+            <div class="mt-3 font-data text-[11px] text-umber-600">
+              {SITE.defaultAuthor} · {dateFmt.format(e.publishedAt)}
+              {e.rating !== undefined && (
+                <>
+                  {' · '}
+                  <span class="text-ink-900">{e.rating.toFixed(1)}/5</span>
+                </>
+              )}
+            </div>
+          </a>
+        ))}
+      </div>
+    ) : (
+      <p class="mt-8 text-sm text-umber-600">More tests are running right now — new posts land soon.</p>
+    )}
+  </section>
+
+  <!-- Side-by-side: reviews vs guides -->
+  <section class="border-b border-sepia-200 py-12">
+    <div class="grid gap-12 md:grid-cols-2">
+      <div>
+        <div class="font-data text-[11px] font-semibold uppercase tracking-[0.18em] text-pine-700">The reviews desk</div>
+        <h2 class="mt-2 font-display text-2xl font-semibold tracking-tight text-ink-900">Products we've lived with</h2>
+        <ul class="mt-6 divide-y divide-sepia-200">
+          {latestReviews.map((r) => (
+            <li>
+              <a href={r.href} class="flex items-start gap-4 py-4 hover:bg-cream-100">
+                <div class="flex-1">
+                  <div class="font-data text-[10px] uppercase tracking-wider text-umber-600">{r.brand}</div>
+                  <h3 class="mt-0.5 font-display text-base font-semibold leading-snug text-ink-900">{r.title}</h3>
+                </div>
+                {r.rating !== undefined && (
+                  <span class="shrink-0 font-data text-sm font-semibold text-ink-900">{r.rating.toFixed(1)}</span>
+                )}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <a href="/reviews" class="mt-4 inline-flex items-center gap-2 font-data text-[11px] font-semibold uppercase tracking-[0.18em] text-pine-700 hover:text-pine-500">
+          All reviews <span aria-hidden="true">&rarr;</span>
+        </a>
+      </div>
+      <div>
+        <div class="font-data text-[11px] font-semibold uppercase tracking-[0.18em] text-pine-700">The guide bench</div>
+        <h2 class="mt-2 font-display text-2xl font-semibold tracking-tight text-ink-900">Start here if you're shopping</h2>
+        <ul class="mt-6 divide-y divide-sepia-200">
+          {latestGuides.map((g) => (
+            <li>
+              <a href={g.href} class="flex items-start gap-4 py-4 hover:bg-cream-100">
+                <div class="flex-1">
+                  <div class="font-data text-[10px] uppercase tracking-wider text-umber-600">{g.category.replace(/-/g, ' ')}</div>
+                  <h3 class="mt-0.5 font-display text-base font-semibold leading-snug text-ink-900">{g.title}</h3>
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+        <a href="/guides" class="mt-4 inline-flex items-center gap-2 font-data text-[11px] font-semibold uppercase tracking-[0.18em] text-pine-700 hover:text-pine-500">
+          All guides <span aria-hidden="true">&rarr;</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Disclosure note (banner activates with affiliate links; this stays honest now) -->
+  <section class="py-10">
+    <p class="max-w-[56ch] text-xs leading-relaxed text-umber-600">
+      Product links on RoomTested go via our own redirect so we can keep them current.
+      Prices shown are hand-checked estimates ("price checked" dates on every widget) —
+      the store always has the final say. See the <a href="/disclosure" class="underline decoration-pine-500 underline-offset-2 hover:text-pine-700">disclosure policy</a>.
+    </p>
+  </section>
+</BaseLayout>

@@ -1,0 +1,12 @@
+{
+  // Minimal user-owned config: the @astrojs/cloudflare v13 adapter (via
+  // @cloudflare/vite-plugin) supplies the worker entry + assets settings itself and
+  // emits a flattened deploy config during build, which `wrangler deploy` picks up.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "roomtested",
+  "compatibility_date": "2026-06-10",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": {
+    "enabled": true
+  }
+}

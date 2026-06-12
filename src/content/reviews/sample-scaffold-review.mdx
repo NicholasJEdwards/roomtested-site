@@ -1,0 +1,47 @@
+---
+title: "Sample review: the RoomTested article scaffold"
+description: "A placeholder review that exercises every article component — replaced by the first real review before launch."
+category: desk-setup
+publishedAt: 2026-06-12
+author: Nicholas Edwards
+brand: Sample
+productId: sample-desk-mat
+lastTested: 2026-06-12
+rating: 4.0
+pros:
+  - Demonstrates every MDX component without imports
+  - Proves the RSS, social-card and redirect pipeline end to end
+cons:
+  - It is not a real review — it gets deleted before launch
+tags: [meta]
+draft: false
+---
+
+This is a **scaffold article**, not a real review. It exists so the build pipeline has at
+least one published post to exercise: the RSS feed, the social cards under
+`/cards/reviews/…`, the product redirect at `/go/sample-desk-mat`, and each of the MDX
+components below. It is deleted the moment the first real review ships.
+
+<RatingBadge rating={4.0} />
+
+## The price widget
+
+<PriceWidget productId="sample-desk-mat" />
+
+## The buy button
+
+<AffiliateButton productId="sample-desk-mat" />
+
+## Pros and cons
+
+<ProsCons
+  pros={["Renders without imports", "Same data source as the price widget"]}
+  cons={["Entirely fictional"]}
+/>
+
+## The comparison table
+
+<ComparisonTable productIds={["sample-desk-mat", "sample-desk-mat"]} />
+
+That's the whole tour. Real articles are written in the ops repo's `content/` studio and
+published through the QA pipeline.

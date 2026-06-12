@@ -1,0 +1,47 @@
+---
+import { SITE } from '../consts';
+
+const nav: { label: string; href: string }[] = [
+  { label: 'Reviews', href: '/reviews' },
+  { label: 'Guides', href: '/guides' },
+  { label: 'Comparisons', href: '/comparisons' },
+  { label: 'About', href: '/about' },
+];
+
+const path = Astro.url.pathname;
+const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
+---
+
+<header class="sticky top-0 z-30 border-b border-sepia-200 bg-cream-50/92 backdrop-blur supports-[backdrop-filter]:bg-cream-50/80">
+  <div class="mx-auto flex max-w-6xl items-center justify-between gap-8 px-4 py-5 sm:py-6">
+    <a href="/" class="group flex items-center gap-3">
+      <span class="font-display text-[28px] font-semibold leading-none tracking-tight text-ink-900 transition-colors group-hover:text-pine-700">
+        {SITE.name}
+      </span>
+      <span class="hidden h-5 w-px bg-sepia-200 sm:block" aria-hidden="true"></span>
+      <span class="hidden font-display text-[13px] italic leading-none text-umber-600 sm:inline">
+        tested in a real room
+      </span>
+    </a>
+    <nav aria-label="Primary">
+      <ul class="flex items-center gap-7 sm:gap-9">
+        {nav.map((item) => (
+          <li>
+            <a
+              href={item.href}
+              class:list={[
+                'relative font-display text-[15px] font-medium transition-colors',
+                isActive(item.href)
+                  ? 'text-pine-700 after:absolute after:inset-x-0 after:-bottom-[22px] after:h-[2px] after:bg-pine-700'
+                  : 'text-ink-900 hover:text-pine-700',
+              ]}
+              aria-current={isActive(item.href) ? 'page' : undefined}
+            >
+              {item.label}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </div>
+</header>

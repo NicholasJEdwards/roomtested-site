@@ -1,0 +1,37 @@
+---
+import JsonLd from '../components/JsonLd.astro';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { organizationLd, personRef } from '../lib/jsonld';
+import { SITE } from '../consts';
+---
+
+<BaseLayout title="About" description={`Who is behind ${SITE.name} and how the site works.`}>
+  <JsonLd data={[organizationLd(), { '@context': 'https://schema.org', ...personRef() }]} />
+  <section class="mx-auto max-w-3xl py-12">
+    <h1 class="font-display text-4xl font-semibold tracking-tight text-ink-900">About {SITE.name}</h1>
+
+    <div class="mt-6 space-y-4 leading-7 text-ink-900">
+      <p>
+        I'm <strong>Nicholas Edwards</strong>, and {SITE.name} is my testing room. I review
+        smart home and desk gear from the UK — the kit I actually buy, install, and live
+        with, in a real room rather than a studio.
+      </p>
+      <p>
+        Every article here is written by me. I use automation for the boring parts
+        (publishing, sharing posts to social media), never for the opinions: if a verdict
+        is on this site, it's because I tested the product and formed it myself. The
+        <a href="/how-we-test" class="underline underline-offset-2">how we test</a> page
+        explains the process.
+      </p>
+      <p>
+        Prices shown are hand-checked estimates with a visible "price checked" date — stores
+        change prices constantly, so treat them as a guide and the store page as the truth.
+        When the site carries affiliate links, that's declared plainly on every page that
+        has them and in the <a href="/disclosure" class="underline underline-offset-2">disclosure policy</a>.
+      </p>
+      <p>
+        Questions, corrections, or a product you'd like tested? <a href="/contact" class="underline underline-offset-2">Get in touch</a>.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

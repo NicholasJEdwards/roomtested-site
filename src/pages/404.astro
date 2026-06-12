@@ -1,0 +1,15 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Page not found">
+  <section class="py-24 text-center">
+    <div class="font-data text-[11px] uppercase tracking-[0.22em] mb-4 text-umber-600">404</div>
+    <h1 class="font-display text-4xl font-semibold tracking-tight text-ink-900">This page didn't survive testing.</h1>
+    <p class="mt-4 text-umber-600">The link is broken or the page has moved.</p>
+    <div class="mt-8 flex items-center justify-center gap-6">
+      <a href="/" class="text-sm font-semibold uppercase tracking-[0.12em] text-pine-700 hover:text-pine-500">Back home <span aria-hidden="true">&rarr;</span></a>
+      <a href="/reviews" class="text-sm font-semibold uppercase tracking-[0.12em] text-pine-700 hover:text-pine-500">Browse reviews <span aria-hidden="true">&rarr;</span></a>
+    </div>
+  </section>
+</BaseLayout>

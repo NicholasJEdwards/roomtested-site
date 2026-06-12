@@ -1,0 +1,35 @@
+---
+// Internal style reference — noindexed and excluded from the sitemap.
+// Fleshed out properly by the Phase 2 design pass.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProsCons from '../components/mdx/ProsCons.astro';
+import RatingBadge from '../components/mdx/RatingBadge.astro';
+import { CATEGORIES } from '../consts';
+---
+
+<BaseLayout title="Style guide">
+  <Fragment slot="head">
+    <meta name="robots" content="noindex, nofollow" />
+  </Fragment>
+  <section class="py-12">
+    <h1 class="font-display text-4xl font-semibold tracking-tight text-ink-900">Style guide</h1>
+    <p class="mt-3 text-umber-600">
+      Placeholder tokens (Phase 1). The Phase 2 design pass replaces this page with the
+      real RoomTested system.
+    </p>
+
+    <h2 class="mt-10 font-display text-2xl font-semibold text-ink-900">Categories</h2>
+    <ul class="mt-4 grid gap-2 sm:grid-cols-2">
+      {CATEGORIES.map((c) => (
+        <li class="rounded-md border border-sepia-200 p-3">
+          <span class="font-semibold">{c.name}</span>
+          <span class="block text-sm text-umber-600">{c.description}</span>
+        </li>
+      ))}
+    </ul>
+
+    <h2 class="mt-10 font-display text-2xl font-semibold text-ink-900">Components</h2>
+    <RatingBadge rating={4.4} />
+    <ProsCons pros={['Example pro', 'Another pro']} cons={['Example con']} />
+  </section>
+</BaseLayout>

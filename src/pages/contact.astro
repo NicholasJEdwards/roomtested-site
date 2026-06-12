@@ -1,0 +1,23 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../consts';
+---
+
+<BaseLayout title="Contact" description={`Contact ${SITE.name}.`}>
+  <section class="mx-auto max-w-3xl py-12">
+    <h1 class="font-display text-4xl font-semibold tracking-tight text-ink-900">Contact</h1>
+
+    <div class="mt-6 space-y-4 leading-7 text-ink-900">
+      <p>
+        Corrections, questions, review requests, or a product you think deserves a proper
+        test — email
+        <a href="mailto:hello@roomtested.com" class="underline underline-offset-2">hello@roomtested.com</a>
+        and you'll get a reply from me, Nicholas.
+      </p>
+      <p class="text-sm text-umber-600">
+        PR samples are accepted only on the understanding that they get the same treatment
+        as products I buy myself: real testing, mandatory cons, and no copy approval.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

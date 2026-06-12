@@ -1,0 +1,12 @@
+---
+interface Props {
+  date: Date;
+  label?: string;
+}
+
+const { date, label = 'Updated' } = Astro.props;
+const iso = date.toISOString();
+const human = date.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
+---
+
+<time datetime={iso} class="text-sm text-umber-600">{label}: {human}</time>

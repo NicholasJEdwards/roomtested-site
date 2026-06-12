@@ -1,0 +1,18 @@
+{
+  "products": [
+    {
+      "id": "sample-desk-mat",
+      "name": "Sample desk mat (placeholder — replaced by the first real product)",
+      "category": "desk-setup",
+      "links": {
+        "aliexpress": {
+          "url": "https://www.aliexpress.com/item/1005001234567890.html",
+          "affiliateUrl": null
+        }
+      },
+      "priceFromGBP": 9.99,
+      "priceCheckedAt": "2026-06-12",
+      "specs": {}
+    }
+  ]
+}

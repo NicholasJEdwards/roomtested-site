@@ -1,0 +1,37 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE } from '../consts';
+---
+
+<BaseLayout title="Privacy" description={`${SITE.name}'s privacy policy.`}>
+  <section class="mx-auto max-w-3xl py-12">
+    <h1 class="font-display text-4xl font-semibold tracking-tight text-ink-900">Privacy</h1>
+
+    <div class="mt-6 space-y-4 leading-7 text-ink-900">
+      <p>{SITE.name} is built to know as little about you as possible:</p>
+      <ul class="list-disc space-y-2 pl-5">
+        <li><strong>No third-party trackers, no ad networks, no social pixels.</strong></li>
+        <li>
+          <strong>No cookies for browsing.</strong> The optional regional price hint stores a
+          single value in your browser's <code>sessionStorage</code> (cleared when the tab
+          closes) and infers your country from Cloudflare's edge — we never see or store it.
+        </li>
+        <li>
+          <strong>Aggregate analytics only.</strong> We use Cloudflare Web Analytics, which is
+          cookie-free and shows us page counts, not people.
+        </li>
+        <li>
+          <strong>Outbound product links</strong> route via our own redirect so we can count
+          clicks per product — anonymously, with no personal data attached.
+        </li>
+        <li>
+          <strong>Email:</strong> if you write to us, your email is used to reply and for
+          nothing else.
+        </li>
+      </ul>
+      <p>
+        Questions? <a href="/contact" class="underline underline-offset-2">Contact us</a>.
+      </p>
+    </div>
+  </section>
+</BaseLayout>

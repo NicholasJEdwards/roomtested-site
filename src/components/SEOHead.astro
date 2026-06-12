@@ -1,0 +1,46 @@
+---
+import { SITE } from '../consts';
+
+interface Props {
+  title: string;
+  description?: string;
+  canonical?: string;
+  ogImage?: string;
+  ogType?: 'website' | 'article';
+}
+
+const {
+  title,
+  description = SITE.description,
+  canonical = new URL(Astro.url.pathname, SITE.url).toString(),
+  ogImage,
+  ogType = 'website',
+} = Astro.props;
+
+const fullTitle = title === SITE.name ? `${title} — ${SITE.tagline}` : `${title} — ${SITE.name}`;
+const ogImageUrl = ogImage ? new URL(ogImage, SITE.url).toString() : undefined;
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="generator" content={Astro.generator} />
+<title>{fullTitle}</title>
+<meta name="description" content={description} />
+<meta name="author" content={SITE.defaultAuthor} />
+<link rel="canonical" href={canonical} />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="sitemap" href="/sitemap-index.xml" />
+<link rel="alternate" type="application/rss+xml" title={SITE.name} href="/rss.xml" />
+
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:type" content={ogType} />
+<meta property="og:url" content={canonical} />
+<meta property="og:site_name" content={SITE.name} />
+<meta property="og:locale" content="en_GB" />
+{ogImageUrl && <meta property="og:image" content={ogImageUrl} />}
+
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={description} />
+{ogImageUrl && <meta name="twitter:image" content={ogImageUrl} />}

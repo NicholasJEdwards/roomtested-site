@@ -1,0 +1,32 @@
+---
+import type { ImageMetadata } from 'astro';
+import { Image } from 'astro:assets';
+import { SITE } from '../consts';
+
+interface Props {
+  photo?: ImageMetadata;
+  src?: string;
+  alt: string;
+  priority?: boolean;
+  sizes?: string;
+  class?: string;
+}
+
+const { photo, src, alt, priority = false, sizes, class: className } = Astro.props;
+---
+
+{photo ? (
+  <Image
+    src={photo}
+    alt={alt}
+    sizes={sizes}
+    loading={priority ? 'eager' : 'lazy'}
+    class={className}
+  />
+) : src ? (
+  <img src={src} alt={alt} loading={priority ? 'eager' : 'lazy'} class={className} />
+) : (
+  <div class:list={['flex items-center justify-center bg-cream-200 text-umber-600', className]} aria-hidden="true">
+    <span class="font-data text-xs uppercase tracking-[0.22em]">{SITE.name}</span>
+  </div>
+)}

@@ -1,0 +1,77 @@
+---
+import { gbp, getProducts } from '../../lib/products';
+
+interface Props {
+  productIds: string[];
+  specs?: string[];
+  winnerProductId?: string;
+}
+
+const { productIds, specs, winnerProductId } = Astro.props;
+const products = getProducts(productIds);
+const specKeys =
+  specs ?? Array.from(new Set(products.flatMap((p) => Object.keys(p.specs ?? {}))));
+
+function formatCell(v: unknown): string {
+  if (typeof v === 'boolean') return v ? 'Yes' : 'No';
+  if (v === undefined || v === null) return '—';
+  return String(v);
+}
+
+function formatSpecLabel(k: string): string {
+  return k.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+const rows: { label: string; values: string[] }[] = [
+  {
+    label: 'Price (from)',
+    values: products.map((p) =>
+      p.priceFromGBP !== undefined ? gbp.format(p.priceFromGBP) : '—'
+    ),
+  },
+  ...specKeys.map((k) => ({
+    label: formatSpecLabel(k),
+    values: products.map((p) => formatCell(p.specs?.[k])),
+  })),
+];
+---
+
+{products.length > 0 ? (
+  <div class="not-prose my-8 overflow-hidden rounded-md border border-sepia-200 bg-cream-50">
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="bg-pine-700 text-cream-50">
+            <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.12em]">Spec</th>
+            {products.map((p) => (
+              <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.12em]">
+                <span class="inline-flex items-center gap-2">
+                  {p.name}
+                  {winnerProductId === p.id && (
+                    <span class="rounded-sm bg-ochre-500/95 px-2 py-0.5 font-data text-[9px] uppercase tracking-widest text-ink-900">
+                      Our pick
+                    </span>
+                  )}
+                </span>
+              </th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr class="border-b border-sepia-200 last:border-b-0 odd:bg-cream-50 even:bg-cream-200">
+              <td class="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-umber-600">{row.label}</td>
+              {row.values.map((v) => (
+                <td class="px-4 py-3 font-data text-ink-900">{v}</td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </div>
+) : (
+  <div class="not-prose my-6 rounded-md border border-ochre-500 bg-cream-100 p-4 text-sm text-ink-900">
+    No products found for comparison: {productIds.join(', ')}
+  </div>
+)}
