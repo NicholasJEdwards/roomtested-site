@@ -1,33 +1,40 @@
+@import '@fontsource-variable/rubik';
+@import '@fontsource-variable/nunito-sans';
+@import '@fontsource-variable/jetbrains-mono';
+
 @import "tailwindcss";
 
 /* ============================================================================
-   PLACEHOLDER THEME — Phase 1 scaffold only.
-   The real RoomTested identity (palette, type pairing, spacing) is produced by
-   the Phase 2 Figma design pass and replaces everything in this @theme block.
-   Token NAMES are kept compatible with the ported components so the site is
-   functional while unstyled-by-design; values are deliberately neutral greys.
+   TEST BENCH — the locked RoomTested identity (direction A, chosen 2026-06-12).
+   Swiss-modernist: zinc ink on near-white, mathematical spacing, one pink
+   accent. Token NAMES are legacy-compatible (components reference them);
+   VALUES are the locked Test Bench system. Spec: docs/brand.md (ops repo).
    ========================================================================== */
 @theme {
   /* Surfaces */
-  --color-cream-50:   #ffffff;
-  --color-cream-100:  #fafafa;
-  --color-cream-200:  #f4f4f4;
+  --color-cream-50:   #FAFAFA; /* page bg */
+  --color-cream-100:  #F4F4F5; /* subtle section */
+  --color-cream-200:  #E8ECF0; /* elevated / stripes */
 
   /* Hairlines + text */
-  --color-sepia-200:  #e5e5e5;
-  --color-sepia-400:  #b5b5b5;
-  --color-umber-600:  #525252;
-  --color-ink-900:    #141414;
+  --color-sepia-200:  #E4E4E7; /* hairlines */
+  --color-sepia-400:  #A1A1AA; /* mid grey */
+  --color-umber-600:  #3F3F46; /* secondary text */
+  --color-ink-900:    #09090B; /* primary text */
 
-  /* Accents — neutral placeholders (Phase 2 brings the real brand colours) */
-  --color-terracotta-600: #1f1f1f;
-  --color-terracotta-700: #000000;
-  --color-pine-500:       #3f3f3f;
-  --color-pine-700:       #1f1f1f;
-  --color-brick-600:      #6b6b6b;
-  --color-ochre-500:      #9a9a9a;
+  /* Accent — exactly one (pink); links/nav are ink, not a second colour */
+  --color-terracotta-600: #DB2777; /* primary action fill — white text passes AA */
+  --color-terracotta-700: #BE185D; /* hover */
+  --color-pine-500:       #3F3F46; /* links — ink, single-accent discipline */
+  --color-pine-700:       #18181B; /* nav-active / hover — ink */
+  --color-brick-600:      #9F1239; /* cons / "skip" semantic */
+  --color-ochre-500:      #F9A8D4; /* badge / "our pick" bg — ink text on it */
 
-  --font-display: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-body:    "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-data:    ui-monospace, "JetBrains Mono", Menlo, monospace;
+  --font-display: "Rubik Variable", Rubik, ui-sans-serif, system-ui, sans-serif;
+  --font-body:    "Nunito Sans Variable", "Nunito Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-data:    "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+
+::selection {
+  background: #F9A8D4;
 }

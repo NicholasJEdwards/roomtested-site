@@ -5,6 +5,7 @@
 // Output: public/cards/<collection>/<slug>/{og,pin,square}.png
 // These are the base image assets for og: meta and every social platform workflow.
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import process from 'node:process';
 
@@ -12,10 +13,11 @@ import matter from 'gray-matter';
 import satori from 'satori';
 import { Resvg } from '@resvg/resvg-js';
 
+const require = createRequire(import.meta.url);
+
 const ROOT = process.cwd();
 const CONTENT_DIR = path.join(ROOT, 'src/content');
 const OUT_DIR = path.join(ROOT, 'public/cards');
-const FONT_DIR = path.join(ROOT, 'src/assets/fonts');
 
 const SITE_NAME = 'RoomTested';
 const AUTHOR = 'Nicholas Edwards';
@@ -46,15 +48,15 @@ function cardTree({ size, title, description, category, kind }) {
       display: 'flex',
       flexDirection: 'column',
       justifyContent: 'space-between',
-      backgroundColor: '#ffffff',
-      color: '#141414',
+      backgroundColor: '#FAFAFA',
+      color: '#09090B',
       padding: pad,
-      fontFamily: 'Inter',
-      borderTop: '24px solid #141414',
+      fontFamily: 'Rubik',
+      borderTop: '24px solid #09090B',
     },
     [
       el('div', { display: 'flex', flexDirection: 'column' }, [
-        el('div', { fontSize: tall ? 30 : 26, letterSpacing: 4, color: '#666666', display: 'flex' }, kicker),
+        el('div', { fontSize: tall ? 30 : 26, letterSpacing: 4, color: '#DB2777', display: 'flex' }, kicker),
         el(
           'div',
           { fontSize: titleSize, fontWeight: 700, lineHeight: 1.12, marginTop: 28, display: 'flex' },
@@ -64,7 +66,7 @@ function cardTree({ size, title, description, category, kind }) {
           ? [
               el(
                 'div',
-                { fontSize: tall ? 34 : 30, lineHeight: 1.35, marginTop: 28, color: '#444444', display: 'flex' },
+                { fontSize: tall ? 34 : 30, lineHeight: 1.35, marginTop: 28, color: '#3F3F46', display: 'flex' },
                 description
               ),
             ]
@@ -74,8 +76,8 @@ function cardTree({ size, title, description, category, kind }) {
         'div',
         { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: tall ? 30 : 26 },
         [
-          el('div', { fontWeight: 700, display: 'flex' }, SITE_NAME),
-          el('div', { color: '#666666', display: 'flex' }, `Tested by ${AUTHOR} · roomtested.com`),
+          el('div', { fontWeight: 700, color: '#09090B', display: 'flex' }, SITE_NAME),
+          el('div', { color: '#3F3F46', display: 'flex' }, `Tested by ${AUTHOR} · roomtested.com`),
         ]
       ),
     ]
@@ -83,13 +85,15 @@ function cardTree({ size, title, description, category, kind }) {
 }
 
 async function main() {
+  // Rubik statics from @fontsource/rubik — satori can't read woff2/variable
+  // fonts, so the static .woff builds feed the card renderer (Test Bench brand).
   const [regular, bold] = await Promise.all([
-    readFile(path.join(FONT_DIR, 'Inter-Regular.otf')),
-    readFile(path.join(FONT_DIR, 'Inter-Bold.otf')),
+    readFile(require.resolve('@fontsource/rubik/files/rubik-latin-400-normal.woff')),
+    readFile(require.resolve('@fontsource/rubik/files/rubik-latin-700-normal.woff')),
   ]);
   const fonts = [
-    { name: 'Inter', data: regular, weight: 400, style: 'normal' },
-    { name: 'Inter', data: bold, weight: 700, style: 'normal' },
+    { name: 'Rubik', data: regular, weight: 400, style: 'normal' },
+    { name: 'Rubik', data: bold, weight: 700, style: 'normal' },
   ];
 
   let made = 0;

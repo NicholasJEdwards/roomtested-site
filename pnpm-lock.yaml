@@ -20,6 +20,18 @@ importers:
       '@astrojs/sitemap':
         specifier: ^3.7.3
         version: 3.7.3
+      '@fontsource-variable/jetbrains-mono':
+        specifier: ^5.2.8
+        version: 5.2.8
+      '@fontsource-variable/nunito-sans':
+        specifier: ^5.2.7
+        version: 5.2.7
+      '@fontsource-variable/rubik':
+        specifier: ^5.2.8
+        version: 5.2.8
+      '@fontsource/rubik':
+        specifier: ^5.2.8
+        version: 5.2.8
       '@resvg/resvg-js':
         specifier: ^2.6.2
         version: 2.6.2
@@ -535,6 +547,18 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@fontsource-variable/jetbrains-mono@5.2.8':
+    resolution: {integrity: sha512-WBA9elru6Jdp5df2mES55wuOO0WIrn3kpXnI4+W2ek5u3ZgLS9XS4gmIlcQhiZOWEKl95meYdvK7xI+ETLCq/Q==}
+
+  '@fontsource-variable/nunito-sans@5.2.7':
+    resolution: {integrity: sha512-rflH5HeAoNjIkwftStzQvxqCJhIS+usMr/lfslWg/RCa499B5qxyjo+74R/QMM0geQt4AY1URlG7wAR1iq6KPQ==}
+
+  '@fontsource-variable/rubik@5.2.8':
+    resolution: {integrity: sha512-vGDExLzB4a2Fj9mca5LqNoA2ZKcU9o+x5FEBLte/nxYkCB9hOQwZS6ZlItUv+Ssn7YMzKauGuI/Po+YueFuZbg==}
+
+  '@fontsource/rubik@5.2.8':
+    resolution: {integrity: sha512-PIc8QR7FqWPcYhbdRiGff56vQlKqg/ytES1YqecSq1GkgxiH4TBshrFvDEOZ9JonUF9m1qQ+qXxJj7wD5zgXEw==}
 
   '@img/colour@1.1.0':
     resolution: {integrity: sha512-Td76q7j57o/tLVdgS746cYARfSyxk8iEfRxewL9h4OMzYhbW4TAcppl0mT4eyqXddh6L/jwoM75mo7ixa/pCeQ==}
@@ -3084,6 +3108,14 @@ snapshots:
 
   '@esbuild/win32-x64@0.27.7':
     optional: true
+
+  '@fontsource-variable/jetbrains-mono@5.2.8': {}
+
+  '@fontsource-variable/nunito-sans@5.2.7': {}
+
+  '@fontsource-variable/rubik@5.2.8': {}
+
+  '@fontsource/rubik@5.2.8': {}
 
   '@img/colour@1.1.0': {}
 

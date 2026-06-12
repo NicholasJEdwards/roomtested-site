@@ -1,10 +1,28 @@
 ---
 // Internal style reference — noindexed and excluded from the sitemap.
-// Fleshed out properly by the Phase 2 design pass.
+// Documents the locked Test Bench identity (direction A).
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ProsCons from '../components/mdx/ProsCons.astro';
 import RatingBadge from '../components/mdx/RatingBadge.astro';
 import { CATEGORIES } from '../consts';
+
+// The Test Bench palette — token names are legacy-compatible; values are the
+// locked system. Source of truth: docs/brand.md (ops repo) + src/styles/global.css.
+const PALETTE: { token: string; hex: string; role: string }[] = [
+  { token: '--color-cream-50', hex: '#FAFAFA', role: 'Page background' },
+  { token: '--color-cream-100', hex: '#F4F4F5', role: 'Subtle section background' },
+  { token: '--color-cream-200', hex: '#E8ECF0', role: 'Elevated surfaces / stripes' },
+  { token: '--color-sepia-200', hex: '#E4E4E7', role: 'Hairlines / borders' },
+  { token: '--color-sepia-400', hex: '#A1A1AA', role: 'Mid grey' },
+  { token: '--color-umber-600', hex: '#3F3F46', role: 'Secondary text' },
+  { token: '--color-ink-900', hex: '#09090B', role: 'Primary text' },
+  { token: '--color-terracotta-600', hex: '#DB2777', role: 'Primary action fill (white text, AA)' },
+  { token: '--color-terracotta-700', hex: '#BE185D', role: 'Action hover' },
+  { token: '--color-pine-500', hex: '#3F3F46', role: 'Links (ink — single-accent discipline)' },
+  { token: '--color-pine-700', hex: '#18181B', role: 'Nav active / link hover (ink)' },
+  { token: '--color-brick-600', hex: '#9F1239', role: 'Cons / "skip" semantic' },
+  { token: '--color-ochre-500', hex: '#F9A8D4', role: 'Badge / "our pick" background (ink text)' },
+];
 ---
 
 <BaseLayout title="Style guide">
@@ -14,9 +32,44 @@ import { CATEGORIES } from '../consts';
   <section class="py-12">
     <h1 class="font-display text-4xl font-semibold tracking-tight text-ink-900">Style guide</h1>
     <p class="mt-3 text-umber-600">
-      Placeholder tokens (Phase 1). The Phase 2 design pass replaces this page with the
-      real RoomTested system.
+      The locked <strong>Test Bench</strong> system (direction A): zinc ink on near-white,
+      one pink accent, Rubik / Nunito Sans / JetBrains Mono. Token names are
+      legacy-compatible; values are the real identity. Spec: <code>docs/brand.md</code> (ops repo).
     </p>
+
+    <h2 class="mt-10 font-display text-2xl font-semibold text-ink-900">Palette</h2>
+    <ul class="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+      {PALETTE.map((c) => (
+        <li class="flex items-center gap-3 rounded-md border border-sepia-200 p-3">
+          <span
+            class="h-10 w-10 shrink-0 rounded-md border border-sepia-200"
+            style={`background: ${c.hex}`}
+            aria-hidden="true"
+          ></span>
+          <span class="min-w-0">
+            <span class="block truncate font-data text-xs text-ink-900">{c.token}</span>
+            <span class="block font-data text-xs uppercase text-umber-600">{c.hex}</span>
+            <span class="block text-sm text-umber-600">{c.role}</span>
+          </span>
+        </li>
+      ))}
+    </ul>
+
+    <h2 class="mt-10 font-display text-2xl font-semibold text-ink-900">Typography</h2>
+    <ul class="mt-4 grid gap-2">
+      <li class="rounded-md border border-sepia-200 p-3">
+        <span class="font-display text-2xl font-semibold text-ink-900">Rubik — display &amp; headings</span>
+        <span class="block font-data text-xs text-umber-600">--font-display</span>
+      </li>
+      <li class="rounded-md border border-sepia-200 p-3">
+        <span class="font-body text-lg text-ink-900">Nunito Sans — body copy, 16–18px, line-height 1.6</span>
+        <span class="block font-data text-xs text-umber-600">--font-body</span>
+      </li>
+      <li class="rounded-md border border-sepia-200 p-3">
+        <span class="font-data text-base text-ink-900">JetBrains Mono — prices, dates, kickers, ratings</span>
+        <span class="block font-data text-xs text-umber-600">--font-data</span>
+      </li>
+    </ul>
 
     <h2 class="mt-10 font-display text-2xl font-semibold text-ink-900">Categories</h2>
     <ul class="mt-4 grid gap-2 sm:grid-cols-2">
