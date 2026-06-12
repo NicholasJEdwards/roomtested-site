@@ -1,18 +1,28 @@
 {
   "products": [
     {
-      "id": "sample-desk-mat",
-      "name": "Sample desk mat (placeholder — replaced by the first real product)",
-      "category": "desk-setup",
+      "id": "fanmi-i226-2-5g-nic",
+      "name": "FANMI I226-T2 PCIe x1 RJ45 Dual Port 2.5G Network Card Intel I226-V Gigabit Ethernet 100/1000M/2500M 2Port LAN Adapter For PC",
+      "category": "networking",
       "links": {
         "aliexpress": {
-          "url": "https://www.aliexpress.com/item/1005001234567890.html",
+          "url": "https://www.aliexpress.com/item/1005006664329996.html",
           "affiliateUrl": null
         }
       },
-      "priceFromGBP": 9.99,
+      "specs": {},
+      "priceFromGBP": 32.78,
       "priceCheckedAt": "2026-06-12",
-      "specs": {}
+      "variants": [
+        {
+          "label": "",
+          "sku_id": "12000037960238945",
+          "sale": 25.19,
+          "orig": 32.78
+        }
+      ],
+      "aliId": "1005006664329996",
+      "priceSource": "mtop-legacy-scraper"
     }
   ]
 }
