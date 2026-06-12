@@ -1,0 +1,179 @@
+---
+import JsonLd from '../../components/JsonLd.astro';
+import KeySpecs from '../../components/KeySpecs.astro';
+import ProductMedia from '../../components/ProductMedia.astro';
+import { CATEGORIES } from '../../consts';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { breadcrumbsLd, productLd } from '../../lib/jsonld';
+import { getArticlesForProduct } from '../../lib/links';
+import {
+  gbp,
+  getAllProducts,
+  goHref,
+  resolveTarget,
+  STORE_LABELS,
+  type Store,
+} from '../../lib/products';
+
+export async function getStaticPaths() {
+  return getAllProducts().map((product) => ({ params: { id: product.id }, props: { product } }));
+}
+
+const { product } = Astro.props;
+const url = `/products/${product.id}`;
+
+const category = CATEGORIES.find((c) => c.slug === product.category);
+const categoryName = category?.name ?? product.category.replace(/-/g, ' ');
+
+// Image honesty: a stored image is a manufacturer/store listing image unless we know
+// it's our own; default to 'listing'. (No 'own' photos are wired into products.json yet.)
+const mediaKind = 'listing' as const;
+
+// specs (Record) → KeySpecs rows.
+const keySpecs =
+  product.specs && Object.keys(product.specs).length > 0
+    ? Object.entries(product.specs).map(([label, value]) => ({
+        label: label.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+        value: typeof value === 'boolean' ? (value ? 'Yes' : 'No') : String(value),
+      }))
+    : undefined;
+
+// Variants worth showing (skip the empty single-variant placeholder).
+const variants = (product.variants ?? []).filter((v) => v.label.trim().length > 0);
+
+// Primary store + CTA target.
+const primaryStore: Store | undefined = (Object.keys(product.links) as Store[])[0];
+const ctaAvailable = !!(primaryStore && resolveTarget(product, primaryStore));
+
+const mentions = await getArticlesForProduct(product.id);
+const dateFmt = new Intl.DateTimeFormat('en-GB', { month: 'short', day: 'numeric', year: 'numeric' });
+---
+
+<BaseLayout
+  title={product.name}
+  description={`${product.name} — price, specs and the RoomTested articles that mention it.`}
+  ogType="website"
+  ogImage={product.image}
+>
+  <JsonLd
+    data={[
+      productLd({
+        name: product.name,
+        brand: product.brand,
+        image: product.image,
+        url,
+        priceFromGBP: product.priceFromGBP,
+        priceCheckedAt: product.priceCheckedAt,
+      }),
+      breadcrumbsLd([
+        { name: 'Home', href: '/' },
+        { name: categoryName, href: `/c/${product.category}` },
+        { name: product.name, href: url },
+      ]),
+    ]}
+  />
+
+  <div class="mx-auto max-w-3xl py-12">
+    <nav class="text-sm text-umber-600" aria-label="Breadcrumb">
+      <a href="/" class="hover:underline">Home</a>
+      <span class="mx-1">&rsaquo;</span>
+      <a href={`/c/${product.category}`} class="hover:underline">{categoryName}</a>
+      <span class="mx-1">&rsaquo;</span>
+      <span>Product</span>
+    </nav>
+
+    <header class="mt-4">
+      {product.brand && (
+        <div class="font-data text-[11px] font-semibold uppercase tracking-[0.18em] text-umber-600">{product.brand}</div>
+      )}
+      <h1 class="mt-1 font-display text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">{product.name}</h1>
+    </header>
+
+    <ProductMedia kind={mediaKind} src={product.image} alt={product.name} />
+
+    <!-- Price block -->
+    <div class="not-prose my-6 rounded-md border border-sepia-200 bg-cream-100 p-5">
+      <div class="font-display text-4xl font-semibold tracking-tight tabular-nums text-ink-900">
+        {product.priceFromGBP !== undefined ? `from ${gbp.format(product.priceFromGBP)}` : 'Price varies'}
+      </div>
+      {product.priceCheckedAt && (
+        <div class="mt-1 font-data text-xs text-umber-600">price checked {product.priceCheckedAt}</div>
+      )}
+      {ctaAvailable && primaryStore && (
+        <a
+          href={goHref(product.id, primaryStore)}
+          rel="sponsored nofollow noopener"
+          target="_blank"
+          aria-label={`Check ${product.name} price at ${STORE_LABELS[primaryStore]} — opens in new tab`}
+          class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-terracotta-600 px-5 py-3 text-cream-50 transition-colors hover:bg-terracotta-700 sm:w-auto"
+        >
+          <span class="text-sm font-semibold uppercase tracking-[0.12em]">
+            Check price at {STORE_LABELS[primaryStore]} <span aria-hidden="true">&rarr;</span>
+          </span>
+        </a>
+      )}
+    </div>
+
+    <KeySpecs specs={keySpecs} />
+
+    {variants.length > 0 && (
+      <section class="not-prose my-8" aria-label="Variants">
+        <div class="mb-3 font-data text-[11px] font-semibold uppercase tracking-[0.18em] text-umber-600">Variants</div>
+        <div class="overflow-hidden rounded-md border border-sepia-200 bg-cream-50">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="bg-pine-700 text-cream-50">
+                <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.12em]">Variant</th>
+                <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.12em]">From</th>
+              </tr>
+            </thead>
+            <tbody>
+              {variants.map((v) => (
+                <tr class="border-b border-sepia-200 last:border-b-0 odd:bg-cream-50 even:bg-cream-200">
+                  <td class="px-4 py-3 font-data text-ink-900">{v.label}</td>
+                  <td class="px-4 py-3 font-data text-ink-900">{v.orig !== undefined ? gbp.format(v.orig) : '—'}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <p class="mt-2 font-data text-[11px] text-umber-600">
+          Prices are research estimates — the store has the final say.
+        </p>
+      </section>
+    )}
+
+    <!-- Reviewed & mentioned in -->
+    <section class="not-prose my-10" aria-label="Reviewed and mentioned in">
+      <h2 class="font-display text-2xl font-semibold tracking-tight text-ink-900">Reviewed &amp; mentioned in</h2>
+      {mentions.length > 0 ? (
+        <ul class="mt-6 grid gap-6 sm:grid-cols-2">
+          {mentions.map((m) => (
+            <li>
+              <a href={m.href} class="group block">
+                <div class="overflow-hidden rounded-md border border-sepia-200 bg-cream-100">
+                  <img
+                    src={m.image}
+                    alt={m.title}
+                    loading="lazy"
+                    class="block aspect-[16/9] w-full object-cover transition-transform group-hover:scale-[1.02]"
+                  />
+                </div>
+                <div class="mt-3 font-data text-[10px] font-semibold uppercase tracking-[0.2em] text-terracotta-600">
+                  {m.category.replace(/-/g, ' ')} · {m.kind}
+                </div>
+                <h3 class="mt-2 font-display text-lg font-semibold leading-snug text-ink-900 group-hover:text-pine-700">{m.title}</h3>
+                <div class="mt-1 font-data text-[11px] text-umber-600">
+                  {dateFmt.format(m.publishedAt)}
+                  {m.rating !== undefined && <span> · <span class="text-ink-900">{m.rating.toFixed(1)}/5</span></span>}
+                </div>
+              </a>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p class="mt-4 text-sm text-umber-600">No published articles mention this product yet — a test may be running.</p>
+      )}
+    </section>
+  </div>
+</BaseLayout>

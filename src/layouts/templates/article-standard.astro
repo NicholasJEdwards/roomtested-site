@@ -1,0 +1,96 @@
+---
+// Generic article layout for guides/comparisons without a special template:
+// breadcrumb · header · Toc · body · KeySpecs · Faq · AuthorStrip · RelatedArticles.
+// Emits articleLd + breadcrumbsLd. The header adapts to whichever collection it's
+// given (guide difficulty/minutes vs comparison last-tested).
+import type { CollectionEntry } from 'astro:content';
+import type { MarkdownHeading } from 'astro';
+
+import AffiliateDisclosure from '../../components/AffiliateDisclosure.astro';
+import AuthorStrip from '../../components/AuthorStrip.astro';
+import Faq from '../../components/Faq.astro';
+import JsonLd from '../../components/JsonLd.astro';
+import KeySpecs from '../../components/KeySpecs.astro';
+import LastUpdated from '../../components/LastUpdated.astro';
+import RelatedArticles from '../../components/RelatedArticles.astro';
+import Toc from '../../components/Toc.astro';
+import { mdxComponents } from '../../lib/mdx-components';
+import { articleLd, breadcrumbsLd } from '../../lib/jsonld';
+import type { ArticleRef } from '../../lib/links';
+
+type Kind = 'guide' | 'comparison';
+
+interface Props {
+  entry: CollectionEntry<'guides'> | CollectionEntry<'comparisons'>;
+  Content: any;
+  headings: MarkdownHeading[];
+  related: ArticleRef[];
+  kind: Kind;
+}
+
+const { entry, Content, headings, related, kind } = Astro.props;
+const d = entry.data as CollectionEntry<'guides'>['data'] & CollectionEntry<'comparisons'>['data'];
+const collection = kind === 'guide' ? 'guides' : 'comparisons';
+const sectionName = kind === 'guide' ? 'Guides' : 'Comparisons';
+const url = `/${collection}/${entry.id}`;
+const ogImage = `/cards/${collection}/${entry.id}/og.png`;
+---
+
+<JsonLd
+  data={[
+    articleLd({
+      title: d.title,
+      description: d.description,
+      url,
+      publishedAt: d.publishedAt,
+      updatedAt: d.updatedAt,
+      author: d.author,
+      image: ogImage,
+    }),
+    breadcrumbsLd([
+      { name: 'Home', href: '/' },
+      { name: sectionName, href: `/${collection}` },
+      { name: d.title, href: url },
+    ]),
+  ]}
+/>
+
+<article class="mx-auto max-w-3xl py-12">
+  <nav class="text-sm text-umber-600" aria-label="Breadcrumb">
+    <a href="/" class="hover:underline">Home</a>
+    <span class="mx-1">&rsaquo;</span>
+    <a href={`/${collection}`} class="hover:underline">{sectionName}</a>
+    <span class="mx-1">&rsaquo;</span>
+    <a href={`/c/${d.category}`} class="hover:underline">{d.category.replace(/-/g, ' ')}</a>
+  </nav>
+
+  <header class="mt-4">
+    <h1 class="font-display text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">{d.title}</h1>
+    <p class="mt-2 text-lg text-umber-600">{d.description}</p>
+    <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-umber-600">
+      {kind === 'guide' && d.difficulty && (
+        <span class="inline-flex items-center rounded bg-cream-200 px-2 py-0.5 font-medium capitalize text-ink-900">{d.difficulty}</span>
+      )}
+      {kind === 'guide' && d.estimatedMinutes && <span>{d.estimatedMinutes} min</span>}
+      <span>By {d.author}</span>
+      <LastUpdated date={d.updatedAt ?? d.publishedAt} />
+      {kind === 'comparison' && d.lastTested && <LastUpdated date={d.lastTested} label="Last tested" />}
+    </div>
+  </header>
+
+  <AffiliateDisclosure />
+
+  <Toc headings={headings} />
+
+  <div class="mt-6 leading-7 text-ink-900 [&>h2]:mt-10 [&>h2]:font-display [&>h2]:text-2xl [&>h2]:font-semibold [&>h2]:tracking-tight [&>h3]:mt-8 [&>h3]:font-display [&>h3]:text-xl [&>h3]:font-semibold [&>p]:mt-4 [&>ul]:mt-4 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:mt-4 [&>ol]:list-decimal [&>ol]:pl-5 [&>ul>li]:mt-1 [&>ol>li]:mt-1">
+    <Content components={mdxComponents} />
+  </div>
+
+  <KeySpecs specs={d.keySpecs} />
+
+  <Faq faq={d.faq} />
+
+  <AuthorStrip author={d.author} />
+
+  <RelatedArticles entries={related} />
+</article>

@@ -1,12 +1,10 @@
 ---
 import { getCollection, render } from 'astro:content';
 
-import AffiliateDisclosure from '../../components/AffiliateDisclosure.astro';
-import JsonLd from '../../components/JsonLd.astro';
-import LastUpdated from '../../components/LastUpdated.astro';
 import BaseLayout from '../../layouts/BaseLayout.astro';
-import { breadcrumbsLd, reviewLd } from '../../lib/jsonld';
-import { mdxComponents } from '../../lib/mdx-components';
+import ReviewStandard from '../../layouts/templates/review-standard.astro';
+import ReviewData from '../../layouts/templates/review-data.astro';
+import { getRelatedArticles } from '../../lib/links';
 
 export async function getStaticPaths() {
   const reviews = await getCollection('reviews', (e) => !e.data.draft || import.meta.env.DEV);
@@ -14,56 +12,25 @@ export async function getStaticPaths() {
 }
 
 const { review } = Astro.props;
-const { Content } = await render(review);
+const { Content, headings } = await render(review);
 const d = review.data;
 const ogImage = `/cards/reviews/${review.id}/og.png`;
+const related = await getRelatedArticles(review);
+
+// Dispatch by frontmatter `template`; default review layout otherwise.
+const Template = d.template === 'review-data' ? ReviewData : ReviewStandard;
 ---
 
-<BaseLayout title={d.title} description={d.description} ogType="article" ogImage={ogImage}>
-  <JsonLd
-    data={[
-      reviewLd({
-        title: d.title,
-        description: d.description,
-        url: `/reviews/${review.id}`,
-        publishedAt: d.publishedAt,
-        updatedAt: d.updatedAt,
-        author: d.author,
-        productName: d.title,
-        brand: d.brand,
-        rating: d.rating,
-      }),
-      breadcrumbsLd([
-        { name: 'Home', href: '/' },
-        { name: 'Reviews', href: '/reviews' },
-        { name: d.title, href: `/reviews/${review.id}` },
-      ]),
-    ]}
-  />
-  <article class="mx-auto max-w-3xl py-12">
-    <nav class="text-sm text-umber-600" aria-label="Breadcrumb">
-      <a href="/" class="hover:underline">Home</a>
-      <span class="mx-1">&rsaquo;</span>
-      <a href="/reviews" class="hover:underline">Reviews</a>
-      <span class="mx-1">&rsaquo;</span>
-      <span>{d.brand}</span>
-    </nav>
-
-    <header class="mt-4">
-      <h1 class="font-display text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">{d.title}</h1>
-      <p class="mt-2 text-lg text-umber-600">{d.description}</p>
-      <div class="mt-4 flex flex-wrap items-center gap-4 text-sm">
-        <span class="inline-flex items-center rounded bg-ink-900 px-2 py-0.5 font-medium text-cream-50">{d.rating.toFixed(1)} / 5</span>
-        <span class="text-umber-600">By {d.author}</span>
-        <LastUpdated date={d.updatedAt ?? d.publishedAt} />
-        <LastUpdated date={d.lastTested} label="Last tested" />
-      </div>
-    </header>
-
-    <AffiliateDisclosure />
-
-    <div class="mt-6 leading-7 text-ink-900 [&>h2]:mt-10 [&>h2]:font-display [&>h2]:text-2xl [&>h2]:font-semibold [&>h2]:tracking-tight [&>h3]:mt-8 [&>h3]:font-display [&>h3]:text-xl [&>h3]:font-semibold [&>p]:mt-4 [&>ul]:mt-4 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:mt-4 [&>ol]:list-decimal [&>ol]:pl-5 [&>ul>li]:mt-1 [&>ol>li]:mt-1">
-      <Content components={mdxComponents} />
-    </div>
-  </article>
+<BaseLayout
+  title={d.title}
+  description={d.description}
+  ogType="article"
+  ogImage={ogImage}
+  publishedAt={d.publishedAt}
+  modifiedAt={d.updatedAt}
+  author={d.author}
+  section={d.category.replace(/-/g, ' ')}
+  tags={d.tags}
+>
+  <Template entry={review} Content={Content} headings={headings} related={related} />
 </BaseLayout>

@@ -11,9 +11,27 @@ interface Props {
   canonical?: string;
   ogImage?: string;
   ogType?: 'website' | 'article';
+  publishedAt?: Date;
+  modifiedAt?: Date;
+  author?: string;
+  section?: string;
+  tags?: string[];
+  noindex?: boolean;
 }
 
-const { title, description = SITE.description, canonical, ogImage, ogType = 'website' } = Astro.props;
+const {
+  title,
+  description = SITE.description,
+  canonical,
+  ogImage,
+  ogType = 'website',
+  publishedAt,
+  modifiedAt,
+  author,
+  section,
+  tags,
+  noindex,
+} = Astro.props;
 ---
 
 <!doctype html>
@@ -25,6 +43,12 @@ const { title, description = SITE.description, canonical, ogImage, ogType = 'web
       canonical={canonical}
       ogImage={ogImage}
       ogType={ogType}
+      publishedAt={publishedAt}
+      modifiedAt={modifiedAt}
+      author={author}
+      section={section}
+      tags={tags}
+      noindex={noindex}
     />
     <slot name="head" />
   </head>

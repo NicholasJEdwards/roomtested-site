@@ -1,0 +1,58 @@
+---
+// Summary callout for reviews — the one-line verdict, optional rating, and a compact
+// pros/cons split. Sits at the top (review-standard) or wherever a template wants a
+// snapshot. Pros/cons are optional so it degrades to just the one-liner.
+interface Props {
+  rating?: number;
+  oneLiner: string;
+  pros?: string[];
+  cons?: string[];
+}
+
+const { rating, oneLiner, pros, cons } = Astro.props;
+const hasPros = Array.isArray(pros) && pros.length > 0;
+const hasCons = Array.isArray(cons) && cons.length > 0;
+---
+
+<aside
+  class="not-prose my-8 overflow-hidden rounded-md border border-sepia-200 bg-cream-100"
+  aria-label="Verdict"
+>
+  <div class="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:gap-6">
+    {rating !== undefined && (
+      <div class="flex shrink-0 flex-col items-center justify-center rounded-md border border-sepia-200 bg-cream-50 px-4 py-3 text-center">
+        <div class="font-display text-3xl font-semibold leading-none text-ink-900">{rating.toFixed(1)}</div>
+        <div class="mt-1 font-data text-[10px] uppercase tracking-wider text-umber-600">out of 5</div>
+      </div>
+    )}
+    <div class="flex-1">
+      <div class="font-data text-[11px] font-semibold uppercase tracking-[0.18em] text-terracotta-600">The verdict</div>
+      <p class="mt-2 font-display text-lg leading-snug text-ink-900">{oneLiner}</p>
+    </div>
+  </div>
+
+  {(hasPros || hasCons) && (
+    <div class="grid border-t border-sepia-200 sm:grid-cols-2">
+      <div class="border-b border-sepia-200 p-5 sm:border-b-0 sm:border-r">
+        <div class="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-pine-700">What we loved</div>
+        {hasPros ? (
+          <ul class="space-y-1.5 font-display text-[15px] leading-snug text-ink-900">
+            {pros!.map((p) => <li>— {p}</li>)}
+          </ul>
+        ) : (
+          <p class="font-data text-xs text-umber-600">—</p>
+        )}
+      </div>
+      <div class="p-5">
+        <div class="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-brick-600">What bugged us</div>
+        {hasCons ? (
+          <ul class="space-y-1.5 font-display text-[15px] leading-snug text-ink-900">
+            {cons!.map((c) => <li>— {c}</li>)}
+          </ul>
+        ) : (
+          <p class="font-data text-xs text-umber-600">—</p>
+        )}
+      </div>
+    </div>
+  )}
+</aside>

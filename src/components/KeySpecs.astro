@@ -1,0 +1,34 @@
+---
+// A clean spec table from keySpecs[]. No-ops when there are no specs so it's safe to
+// drop into any template unconditionally.
+interface Props {
+  specs?: { label: string; value: string }[];
+  title?: string;
+}
+
+const { specs, title = 'Key specs' } = Astro.props;
+const has = Array.isArray(specs) && specs.length > 0;
+---
+
+{has && (
+  <section class="not-prose my-8" aria-label={title}>
+    <div class="mb-3 font-data text-[11px] font-semibold uppercase tracking-[0.18em] text-umber-600">{title}</div>
+    <div class="overflow-hidden rounded-md border border-sepia-200 bg-cream-50">
+      <table class="w-full text-sm">
+        <tbody>
+          {specs!.map((spec) => (
+            <tr class="border-b border-sepia-200 last:border-b-0 odd:bg-cream-50 even:bg-cream-200">
+              <th
+                scope="row"
+                class="w-2/5 px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.12em] text-umber-600"
+              >
+                {spec.label}
+              </th>
+              <td class="px-4 py-3 font-data text-ink-900">{spec.value}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+)}

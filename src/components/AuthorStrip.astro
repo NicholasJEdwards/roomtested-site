@@ -1,0 +1,42 @@
+---
+// Nicholas byline card — closes every article with who tested it and links to the
+// methodology. Reinforces the "tested in a real room" trust signal (and E-E-A-T).
+import { SITE } from '../consts';
+
+interface Props {
+  author?: string;
+  class?: string;
+}
+
+const { author = SITE.defaultAuthor, class: className } = Astro.props;
+const initials = author
+  .split(/\s+/)
+  .map((part) => part[0])
+  .filter(Boolean)
+  .slice(0, 2)
+  .join('')
+  .toUpperCase();
+---
+
+<aside
+  class:list={['not-prose my-10 flex items-start gap-4 rounded-md border border-sepia-200 bg-cream-100 p-5', className]}
+  aria-label="About the author"
+>
+  <span
+    class="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-ink-900 font-display text-base font-semibold text-cream-50"
+    aria-hidden="true"
+  >
+    {initials}
+  </span>
+  <div class="flex-1">
+    <div class="font-display text-base font-semibold text-ink-900">{author}</div>
+    <p class="mt-1 text-sm leading-relaxed text-umber-600">
+      Tested in a real room — long enough that the honeymoon phase has ended — before it's
+      recommended.
+    </p>
+    <div class="mt-3 flex flex-wrap gap-4 font-data text-[11px] font-semibold uppercase tracking-[0.14em]">
+      <a href="/about" class="text-pine-700 transition-colors hover:text-ink-900">About</a>
+      <a href="/how-we-test" class="text-pine-700 transition-colors hover:text-ink-900">How we test</a>
+    </div>
+  </div>
+</aside>

@@ -1,0 +1,32 @@
+---
+// Table of contents built from Astro's render() `headings`. Shows h2/h3 only; no-ops
+// when there are too few headings to be useful.
+import type { MarkdownHeading } from 'astro';
+
+interface Props {
+  headings?: MarkdownHeading[];
+  title?: string;
+}
+
+const { headings = [], title = 'On this page' } = Astro.props;
+const items = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const has = items.length >= 2;
+---
+
+{has && (
+  <nav class="not-prose my-8 rounded-md border border-sepia-200 bg-cream-100 p-5" aria-label={title}>
+    <div class="font-data text-[11px] font-semibold uppercase tracking-[0.18em] text-umber-600">{title}</div>
+    <ul class="mt-3 space-y-1.5 text-sm">
+      {items.map((h) => (
+        <li class={h.depth === 3 ? 'pl-4' : ''}>
+          <a
+            href={`#${h.slug}`}
+            class="text-ink-900 underline-offset-2 transition-colors hover:text-pine-700 hover:underline"
+          >
+            {h.text}
+          </a>
+        </li>
+      ))}
+    </ul>
+  </nav>
+)}

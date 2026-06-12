@@ -1,0 +1,90 @@
+---
+// Comparison layout (default for comparisons, or template: "comparison-grid"): the
+// side-by-side ComparisonTable goes up top, then the body argues the call. Emits
+// articleLd + breadcrumbsLd. The body can still include its own <ComparisonTable> with
+// custom spec keys; this one is the at-a-glance lead built from productIds.
+import type { CollectionEntry } from 'astro:content';
+import type { MarkdownHeading } from 'astro';
+
+import AffiliateDisclosure from '../../components/AffiliateDisclosure.astro';
+import AuthorStrip from '../../components/AuthorStrip.astro';
+import ComparisonTable from '../../components/mdx/ComparisonTable.astro';
+import Faq from '../../components/Faq.astro';
+import JsonLd from '../../components/JsonLd.astro';
+import KeySpecs from '../../components/KeySpecs.astro';
+import LastUpdated from '../../components/LastUpdated.astro';
+import RelatedArticles from '../../components/RelatedArticles.astro';
+import Toc from '../../components/Toc.astro';
+import { mdxComponents } from '../../lib/mdx-components';
+import { articleLd, breadcrumbsLd } from '../../lib/jsonld';
+import type { ArticleRef } from '../../lib/links';
+
+interface Props {
+  entry: CollectionEntry<'comparisons'>;
+  Content: any;
+  headings: MarkdownHeading[];
+  related: ArticleRef[];
+}
+
+const { entry, Content, headings, related } = Astro.props;
+const d = entry.data;
+const url = `/comparisons/${entry.id}`;
+const ogImage = `/cards/comparisons/${entry.id}/og.png`;
+---
+
+<JsonLd
+  data={[
+    articleLd({
+      title: d.title,
+      description: d.description,
+      url,
+      publishedAt: d.publishedAt,
+      updatedAt: d.updatedAt,
+      author: d.author,
+      image: ogImage,
+    }),
+    breadcrumbsLd([
+      { name: 'Home', href: '/' },
+      { name: 'Comparisons', href: '/comparisons' },
+      { name: d.title, href: url },
+    ]),
+  ]}
+/>
+
+<article class="mx-auto max-w-3xl py-12">
+  <nav class="text-sm text-umber-600" aria-label="Breadcrumb">
+    <a href="/" class="hover:underline">Home</a>
+    <span class="mx-1">&rsaquo;</span>
+    <a href="/comparisons" class="hover:underline">Comparisons</a>
+    <span class="mx-1">&rsaquo;</span>
+    <a href={`/c/${d.category}`} class="hover:underline">{d.category.replace(/-/g, ' ')}</a>
+  </nav>
+
+  <header class="mt-4">
+    <h1 class="font-display text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">{d.title}</h1>
+    <p class="mt-2 text-lg text-umber-600">{d.description}</p>
+    <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-umber-600">
+      <span>By {d.author}</span>
+      <LastUpdated date={d.updatedAt ?? d.publishedAt} />
+      <LastUpdated date={d.lastTested} label="Last tested" />
+    </div>
+  </header>
+
+  <AffiliateDisclosure />
+
+  <ComparisonTable productIds={d.productIds} winnerProductId={d.winnerProductId} />
+
+  <Toc headings={headings} />
+
+  <div class="mt-6 leading-7 text-ink-900 [&>h2]:mt-10 [&>h2]:font-display [&>h2]:text-2xl [&>h2]:font-semibold [&>h2]:tracking-tight [&>h3]:mt-8 [&>h3]:font-display [&>h3]:text-xl [&>h3]:font-semibold [&>p]:mt-4 [&>ul]:mt-4 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:mt-4 [&>ol]:list-decimal [&>ol]:pl-5 [&>ul>li]:mt-1 [&>ol>li]:mt-1">
+    <Content components={mdxComponents} />
+  </div>
+
+  <KeySpecs specs={d.keySpecs} />
+
+  <Faq faq={d.faq} />
+
+  <AuthorStrip author={d.author} />
+
+  <RelatedArticles entries={related} />
+</article>

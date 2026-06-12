@@ -1,0 +1,83 @@
+---
+// Horizontally-scrollable carousel of related articles, shown at the end of an article.
+// Accessible: a labelled region, scroll-snap, real <a> cards (keyboard-focusable and
+// scrolled into view on focus), prev/next buttons for pointer users. No-ops when empty.
+import type { ArticleRef } from '../lib/links';
+
+interface Props {
+  entries: ArticleRef[];
+  title?: string;
+}
+
+const { entries, title = 'Related reviews & guides' } = Astro.props;
+const has = entries.length > 0;
+const dateFmt = new Intl.DateTimeFormat('en-GB', { month: 'short', day: 'numeric', year: 'numeric' });
+---
+
+{has && (
+  <section class="not-prose my-12" aria-label={title}>
+    <div class="flex items-baseline justify-between gap-4">
+      <h2 class="font-display text-2xl font-semibold tracking-tight text-ink-900">{title}</h2>
+      <div class="hidden gap-2 sm:flex" data-carousel-controls>
+        <button
+          type="button"
+          data-carousel-prev
+          aria-label="Scroll to previous related articles"
+          class="flex h-9 w-9 items-center justify-center rounded-full border border-sepia-200 bg-cream-50 text-ink-900 transition-colors hover:border-pine-700 hover:text-pine-700"
+        >
+          <span aria-hidden="true">&larr;</span>
+        </button>
+        <button
+          type="button"
+          data-carousel-next
+          aria-label="Scroll to next related articles"
+          class="flex h-9 w-9 items-center justify-center rounded-full border border-sepia-200 bg-cream-50 text-ink-900 transition-colors hover:border-pine-700 hover:text-pine-700"
+        >
+          <span aria-hidden="true">&rarr;</span>
+        </button>
+      </div>
+    </div>
+
+    <ul
+      data-carousel-track
+      class="mt-6 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-4 [-ms-overflow-style:none] [scrollbar-width:thin]"
+    >
+      {entries.map((e) => (
+        <li class="w-[78%] shrink-0 snap-start sm:w-[46%] lg:w-[31%]">
+          <a href={e.href} class="group block h-full">
+            <div class="overflow-hidden rounded-md border border-sepia-200 bg-cream-100">
+              <img
+                src={e.image}
+                alt={e.title}
+                loading="lazy"
+                class="block aspect-[16/9] w-full object-cover transition-transform group-hover:scale-[1.02]"
+              />
+            </div>
+            <div class="mt-3 font-data text-[10px] font-semibold uppercase tracking-[0.2em] text-terracotta-600">
+              {e.category.replace(/-/g, ' ')} · {e.kind}
+            </div>
+            <h3 class="mt-2 font-display text-lg font-semibold leading-snug text-ink-900 group-hover:text-pine-700">{e.title}</h3>
+            <div class="mt-2 font-data text-[11px] text-umber-600">
+              {dateFmt.format(e.publishedAt)}
+              {e.rating !== undefined && <span> · <span class="text-ink-900">{e.rating.toFixed(1)}/5</span></span>}
+            </div>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </section>
+)}
+
+<script>
+  // Progressive enhancement only — the track scrolls natively (and via keyboard focus)
+  // without this; the buttons just add a pointer affordance.
+  for (const track of document.querySelectorAll<HTMLElement>('[data-carousel-track]')) {
+    const section = track.closest('section');
+    const prev = section?.querySelector<HTMLButtonElement>('[data-carousel-prev]');
+    const next = section?.querySelector<HTMLButtonElement>('[data-carousel-next]');
+    if (!prev || !next) continue;
+    const step = () => Math.max(track.clientWidth * 0.8, 240);
+    prev.addEventListener('click', () => track.scrollBy({ left: -step(), behavior: 'smooth' }));
+    next.addEventListener('click', () => track.scrollBy({ left: step(), behavior: 'smooth' }));
+  }
+</script>

@@ -1,0 +1,47 @@
+---
+import ArticleList from '../../components/ArticleList.astro';
+import JsonLd from '../../components/JsonLd.astro';
+import { CATEGORIES } from '../../consts';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { breadcrumbsLd, itemListLd } from '../../lib/jsonld';
+import { getCategoryArticles } from '../../lib/links';
+
+export async function getStaticPaths() {
+  return CATEGORIES.map((category) => ({ params: { category: category.slug }, props: { category } }));
+}
+
+const { category } = Astro.props;
+const url = `/c/${category.slug}`;
+const articles = await getCategoryArticles(category.slug);
+const entries = articles.map((a) => ({
+  href: a.href,
+  title: a.title,
+  description: a.description,
+  category: a.category,
+  publishedAt: a.publishedAt,
+  rating: a.rating,
+  brand: a.brand,
+}));
+---
+
+<BaseLayout
+  title={category.name}
+  description={`${category.name}: ${category.description} Every product tested in a real room.`}
+>
+  <JsonLd
+    data={[
+      breadcrumbsLd([
+        { name: 'Home', href: '/' },
+        { name: category.name, href: url },
+      ]),
+      itemListLd(articles.map((a) => ({ name: a.title, url: a.href }))),
+    ]}
+  />
+  <ArticleList
+    kicker="Category"
+    title={category.name}
+    intro={`${category.description} Reviews, guides and comparisons — every product tested in a real room before we recommend it.`}
+    entries={entries}
+    emptyMessage="No posts in this category yet — a test may be running. New posts land here soon."
+  />
+</BaseLayout>

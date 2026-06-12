@@ -1,5 +1,5 @@
 ---
-import { SITE } from '../consts';
+import { CATEGORIES, SITE } from '../consts';
 import SocialIcon from './SocialIcon.astro';
 
 const year = new Date().getFullYear();
@@ -22,7 +22,7 @@ const socials: Social[] = [
 ---
 
 <footer class="mt-20 border-t border-sepia-200 bg-cream-50">
-  <div class="mx-auto grid max-w-6xl gap-12 px-4 py-14 md:grid-cols-[1.4fr_1fr_1.2fr]">
+  <div class="mx-auto grid max-w-6xl gap-12 px-4 py-14 md:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
     <!-- About strip -->
     <div>
       <div class="font-display text-2xl font-semibold tracking-tight text-ink-900">{SITE.name}</div>
@@ -44,6 +44,18 @@ const socials: Social[] = [
         <li><a href="/how-we-test" class="text-ink-900 transition-colors hover:text-pine-700">How we test</a></li>
         <li><a href="/about" class="text-ink-900 transition-colors hover:text-pine-700">About</a></li>
         <li><a href="/contact" class="text-ink-900 transition-colors hover:text-pine-700">Contact</a></li>
+      </ul>
+    </div>
+
+    <!-- Categories -->
+    <div>
+      <div class="font-data text-[11px] font-semibold uppercase tracking-[0.18em] text-ink-900">Categories</div>
+      <ul class="mt-4 grid grid-cols-1 gap-2.5 text-sm sm:grid-cols-2 md:grid-cols-1">
+        {CATEGORIES.map((c) => (
+          <li>
+            <a href={`/c/${c.slug}`} class="text-ink-900 transition-colors hover:text-pine-700">{c.name}</a>
+          </li>
+        ))}
       </ul>
     </div>
 

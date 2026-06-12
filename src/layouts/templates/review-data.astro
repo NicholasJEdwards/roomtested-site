@@ -1,0 +1,115 @@
+---
+// Specs-led review variant (template: "review-data"): KeySpecs go up top, right under
+// the header, before the verdict and body. Same JSON-LD as review-standard. Use for
+// component-style reviews where the numbers ARE the story (NICs, SSDs, PSUs…).
+import type { CollectionEntry } from 'astro:content';
+import type { MarkdownHeading } from 'astro';
+
+import AffiliateDisclosure from '../../components/AffiliateDisclosure.astro';
+import AuthorStrip from '../../components/AuthorStrip.astro';
+import Faq from '../../components/Faq.astro';
+import JsonLd from '../../components/JsonLd.astro';
+import KeySpecs from '../../components/KeySpecs.astro';
+import LastUpdated from '../../components/LastUpdated.astro';
+import ProsCons from '../../components/mdx/ProsCons.astro';
+import RelatedArticles from '../../components/RelatedArticles.astro';
+import Toc from '../../components/Toc.astro';
+import Verdict from '../../components/Verdict.astro';
+import { mdxComponents } from '../../lib/mdx-components';
+import { breadcrumbsLd, productLd, reviewLd } from '../../lib/jsonld';
+import type { ArticleRef } from '../../lib/links';
+import { getProduct } from '../../lib/products';
+
+interface Props {
+  entry: CollectionEntry<'reviews'>;
+  Content: any;
+  headings: MarkdownHeading[];
+  related: ArticleRef[];
+}
+
+const { entry, Content, headings, related } = Astro.props;
+const d = entry.data;
+const url = `/reviews/${entry.id}`;
+const product = getProduct(d.productId);
+const hasProsCons = d.pros.length > 0 || d.cons.length > 0;
+// Fall back to the product registry's specs when the post didn't hand-author keySpecs.
+const specsFromRegistry =
+  product?.specs && Object.keys(product.specs).length > 0
+    ? Object.entries(product.specs).map(([label, value]) => ({
+        label: label.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase()),
+        value: String(value),
+      }))
+    : undefined;
+const keySpecs = d.keySpecs ?? specsFromRegistry;
+---
+
+<JsonLd
+  data={[
+    reviewLd({
+      title: d.title,
+      description: d.description,
+      url,
+      publishedAt: d.publishedAt,
+      updatedAt: d.updatedAt,
+      author: d.author,
+      productName: product?.name ?? d.title,
+      brand: d.brand,
+      rating: d.rating,
+    }),
+    productLd({
+      name: product?.name ?? d.title,
+      brand: d.brand,
+      image: product?.image,
+      url,
+      priceFromGBP: product?.priceFromGBP,
+      priceCheckedAt: product?.priceCheckedAt,
+      ...(d.rating > 0 ? { aggregateRating: { ratingValue: d.rating, reviewCount: 1 } } : {}),
+    }),
+    breadcrumbsLd([
+      { name: 'Home', href: '/' },
+      { name: 'Reviews', href: '/reviews' },
+      { name: d.title, href: url },
+    ]),
+  ]}
+/>
+
+<article class="mx-auto max-w-3xl py-12">
+  <nav class="text-sm text-umber-600" aria-label="Breadcrumb">
+    <a href="/" class="hover:underline">Home</a>
+    <span class="mx-1">&rsaquo;</span>
+    <a href="/reviews" class="hover:underline">Reviews</a>
+    <span class="mx-1">&rsaquo;</span>
+    <a href={`/c/${d.category}`} class="hover:underline">{d.category.replace(/-/g, ' ')}</a>
+  </nav>
+
+  <header class="mt-4">
+    <h1 class="font-display text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">{d.title}</h1>
+    <p class="mt-2 text-lg text-umber-600">{d.description}</p>
+    <div class="mt-4 flex flex-wrap items-center gap-4 text-sm">
+      <span class="inline-flex items-center rounded bg-ink-900 px-2 py-0.5 font-medium text-cream-50">{d.rating.toFixed(1)} / 5</span>
+      <span class="text-umber-600">By {d.author}</span>
+      <LastUpdated date={d.updatedAt ?? d.publishedAt} />
+      <LastUpdated date={d.lastTested} label="Last tested" />
+    </div>
+  </header>
+
+  <AffiliateDisclosure />
+
+  <KeySpecs specs={keySpecs} title="The specs" />
+
+  {d.rating > 0 && <Verdict rating={d.rating} oneLiner={d.description} pros={d.pros} cons={d.cons} />}
+
+  <Toc headings={headings} />
+
+  <div class="mt-6 leading-7 text-ink-900 [&>h2]:mt-10 [&>h2]:font-display [&>h2]:text-2xl [&>h2]:font-semibold [&>h2]:tracking-tight [&>h3]:mt-8 [&>h3]:font-display [&>h3]:text-xl [&>h3]:font-semibold [&>p]:mt-4 [&>ul]:mt-4 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:mt-4 [&>ol]:list-decimal [&>ol]:pl-5 [&>ul>li]:mt-1 [&>ol>li]:mt-1">
+    <Content components={mdxComponents} />
+  </div>
+
+  {hasProsCons && <ProsCons pros={d.pros} cons={d.cons} />}
+
+  <Faq faq={d.faq} />
+
+  <AuthorStrip author={d.author} />
+
+  <RelatedArticles entries={related} />
+</article>

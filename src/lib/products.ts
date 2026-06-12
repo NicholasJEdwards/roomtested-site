@@ -10,6 +10,16 @@ export interface ProductLink {
   affiliateUrl: string | null;
 }
 
+export interface ProductVariant {
+  /** SKU label, e.g. "Black / 1m". May be empty for single-variant items. */
+  label: string;
+  sku_id?: string;
+  /** New-user / promo sale price (NOT used as the headline price). */
+  sale?: number;
+  /** Standard strike-through price — the conservative cost basis. */
+  orig?: number;
+}
+
 export interface Product {
   id: string;
   name: string;
@@ -22,9 +32,17 @@ export interface Product {
   priceCheckedAt?: string;
   image?: string;
   specs?: Record<string, string | number | boolean>;
+  variants?: ProductVariant[];
+  /** Raw AliExpress item id. */
+  aliId?: string;
 }
 
 const products = (data as { products: Product[] }).products;
+
+/** Every product in the registry (used by the product-page getStaticPaths). */
+export function getAllProducts(): Product[] {
+  return products;
+}
 
 export function getProduct(id: string): Product | undefined {
   return products.find((p) => p.id === id);

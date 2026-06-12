@@ -1,0 +1,29 @@
+---
+// FAQ list + its FAQPage JSON-LD. No-ops entirely when faq is absent/empty, so it's
+// safe to render unconditionally from a template.
+import { faqLd } from '../lib/jsonld';
+import JsonLd from './JsonLd.astro';
+
+interface Props {
+  faq?: { q: string; a: string }[];
+  title?: string;
+}
+
+const { faq, title = 'Frequently asked questions' } = Astro.props;
+const has = Array.isArray(faq) && faq.length > 0;
+---
+
+{has && (
+  <section class="not-prose my-10" aria-label={title}>
+    <JsonLd data={faqLd(faq!)} />
+    <h2 class="font-display text-2xl font-semibold tracking-tight text-ink-900">{title}</h2>
+    <dl class="mt-6 divide-y divide-sepia-200 border-y border-sepia-200">
+      {faq!.map((item) => (
+        <div class="py-5">
+          <dt class="font-display text-lg font-semibold leading-snug text-ink-900">{item.q}</dt>
+          <dd class="mt-2 leading-7 text-umber-600">{item.a}</dd>
+        </div>
+      ))}
+    </dl>
+  </section>
+)}

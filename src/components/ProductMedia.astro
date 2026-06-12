@@ -1,0 +1,60 @@
+---
+// Product / article imagery with an HONESTY LABEL. The label is the whole point:
+//   kind 'own'     → our own photo, no badge (the gold standard)
+//   kind '3d'      → a 3D model render — badged "3D model render" so it's never
+//                    mistaken for a real photo
+//   kind 'listing' → a manufacturer/store listing image — captioned as such
+// Uses Hero.astro's <Image>/<img> pattern (build-time optimisation when given a src).
+import { SITE } from '../consts';
+
+type Kind = 'own' | '3d' | 'listing';
+
+interface Props {
+  kind: Kind;
+  src?: string;
+  alt: string;
+  caption?: string;
+  class?: string;
+}
+
+const { kind, src, alt, caption, class: className } = Astro.props;
+
+// The honesty label describes the actual image, so the auto badge/caption only apply
+// when there IS one. The placeholder (no src) carries no claim; an explicit `caption`
+// still always shows.
+const badge = src && kind === '3d' ? '3D model render' : null;
+const defaultCaption = src && kind === 'listing' ? 'Manufacturer listing image' : null;
+const resolvedCaption = caption ?? defaultCaption;
+---
+
+<figure class:list={['not-prose my-6', className]}>
+  <div class="relative overflow-hidden rounded-md border border-sepia-200 bg-cream-100">
+    {src ? (
+      <img
+        src={src}
+        alt={alt}
+        loading="lazy"
+        class="block aspect-[16/9] w-full object-cover"
+      />
+    ) : (
+      <div
+        class="flex aspect-[16/9] w-full items-center justify-center bg-cream-200 text-umber-600"
+        aria-hidden="true"
+      >
+        <span class="font-data text-xs uppercase tracking-[0.22em]">{SITE.name}</span>
+      </div>
+    )}
+    {badge && (
+      <span
+        class="absolute right-2 top-2 rounded-sm bg-ochre-500/95 px-2 py-0.5 font-data text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-900"
+      >
+        {badge}
+      </span>
+    )}
+  </div>
+  {resolvedCaption && (
+    <figcaption class="mt-2 font-data text-[11px] uppercase tracking-wider text-umber-600">
+      {resolvedCaption}
+    </figcaption>
+  )}
+</figure>

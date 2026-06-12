@@ -26,6 +26,12 @@ const commonFields = (image: SchemaContext['image']) => ({
   heroImage: z.string().optional(),
   heroPhoto: image().optional(),
   draft: z.boolean().default(false),
+  // SEO / template layer (all optional — existing posts still validate). `template`
+  // picks a layout variant in src/layouts/templates/; faq/keySpecs drive FAQ + spec
+  // table components and their JSON-LD.
+  template: z.string().optional(),
+  faq: z.array(z.object({ q: z.string(), a: z.string() })).optional(),
+  keySpecs: z.array(z.object({ label: z.string(), value: z.string() })).optional(),
 });
 
 const reviews = defineCollection({
@@ -47,6 +53,8 @@ const guides = defineCollection({
     ...commonFields(image),
     difficulty: z.enum(['beginner', 'intermediate', 'advanced']).default('intermediate'),
     estimatedMinutes: z.number().optional(),
+    // Optional HowTo steps — feeds StepList + howToLd on guide-howto template.
+    steps: z.array(z.object({ name: z.string(), text: z.string() })).optional(),
   }),
 });
 
