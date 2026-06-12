@@ -55,6 +55,23 @@ const guides = defineCollection({
     estimatedMinutes: z.number().optional(),
     // Optional HowTo steps — feeds StepList + howToLd on guide-howto template.
     steps: z.array(z.object({ name: z.string(), text: z.string() })).optional(),
+    // Ranked picks for the roundup/listicle template (`template: 'roundup'`). Each pick
+    // references a registry product (price/links/image) plus the editorial fields. Built
+    // only from gear actually tested → drives BestOfPick + ItemList JSON-LD.
+    picks: z
+      .array(
+        z.object({
+          productId: z.string(),
+          tier: z.string().optional(), // e.g. "Best value overall"
+          name: z.string().optional(), // overrides the product name if set
+          rating: z.number().min(0).max(10).optional(),
+          blurb: z.string(),
+          pros: z.array(z.string()).default([]),
+          cons: z.array(z.string()).default([]),
+          reviewHref: z.string().optional(),
+        }),
+      )
+      .optional(),
   }),
 });
 

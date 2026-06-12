@@ -2,6 +2,7 @@
 import JsonLd from '../../components/JsonLd.astro';
 import KeySpecs from '../../components/KeySpecs.astro';
 import ProductMedia from '../../components/ProductMedia.astro';
+import RelatedArticles from '../../components/RelatedArticles.astro';
 import { CATEGORIES } from '../../consts';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { breadcrumbsLd, productLd } from '../../lib/jsonld';
@@ -25,9 +26,10 @@ const url = `/products/${product.id}`;
 const category = CATEGORIES.find((c) => c.slug === product.category);
 const categoryName = category?.name ?? product.category.replace(/-/g, ' ');
 
-// Image honesty: a stored image is a manufacturer/store listing image unless we know
-// it's our own; default to 'listing'. (No 'own' photos are wired into products.json yet.)
-const mediaKind = 'listing' as const;
+// Image honesty: a stored image is a manufacturer/store listing image unless we know it's
+// our own (no 'own' photos are wired into products.json yet → 'listing'). With no image,
+// ProductMedia renders the clean placeholder and makes NO provenance claim.
+const mediaKind = product.image ? ('listing' as const) : ('own' as const);
 
 // specs (Record) → KeySpecs rows.
 const keySpecs =
@@ -41,12 +43,28 @@ const keySpecs =
 // Variants worth showing (skip the empty single-variant placeholder).
 const variants = (product.variants ?? []).filter((v) => v.label.trim().length > 0);
 
-// Primary store + CTA target.
-const primaryStore: Store | undefined = (Object.keys(product.links) as Store[])[0];
+// Buy box: primary store (+ a "compare" store if a second link exists).
+const storeKeys = Object.keys(product.links) as Store[];
+const primaryStore: Store | undefined = storeKeys[0];
+const compareStore: Store | undefined = storeKeys.find((s) => s !== primaryStore);
 const ctaAvailable = !!(primaryStore && resolveTarget(product, primaryStore));
+const compareAvailable = !!(compareStore && resolveTarget(product, compareStore));
+
+const checkedOn = product.priceCheckedAt
+  ? new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+      .format(new Date(product.priceCheckedAt))
+      .toUpperCase()
+  : null;
 
 const mentions = await getArticlesForProduct(product.id);
-const dateFmt = new Intl.DateTimeFormat('en-GB', { month: 'short', day: 'numeric', year: 'numeric' });
+// Pink chip per mention: full review / winner / ranked / compared / guide.
+const mentionEntries = mentions.map((m) => {
+  let tag: string | undefined;
+  if (m.kind === 'review') tag = 'Full review';
+  else if (m.kind === 'comparison') tag = 'Compared';
+  else if (m.kind === 'guide') tag = 'Featured';
+  return { ...m, tag };
+});
 ---
 
 <BaseLayout
@@ -73,107 +91,154 @@ const dateFmt = new Intl.DateTimeFormat('en-GB', { month: 'short', day: 'numeric
     ]}
   />
 
-  <div class="mx-auto max-w-3xl py-12">
-    <nav class="text-sm text-umber-600" aria-label="Breadcrumb">
-      <a href="/" class="hover:underline">Home</a>
-      <span class="mx-1">&rsaquo;</span>
-      <a href={`/c/${product.category}`} class="hover:underline">{categoryName}</a>
-      <span class="mx-1">&rsaquo;</span>
-      <span>Product</span>
+  <div class="py-10">
+    <nav class="font-data text-xs uppercase tracking-[0.05em] text-sepia-400" aria-label="Breadcrumb">
+      <a href="/" class="hover:text-ink-900">Home</a>
+      <span class="mx-1.5">&rsaquo;</span>
+      <a href={`/c/${product.category}`} class="hover:text-ink-900">{categoryName}</a>
+      <span class="mx-1.5">&rsaquo;</span>
+      <span class="text-umber-600">{product.name}</span>
     </nav>
 
-    <header class="mt-4">
-      {product.brand && (
-        <div class="font-data text-[11px] font-semibold uppercase tracking-[0.18em] text-umber-600">{product.brand}</div>
-      )}
-      <h1 class="mt-1 font-display text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">{product.name}</h1>
-    </header>
-
-    <ProductMedia kind={mediaKind} src={product.image} alt={product.name} />
-
-    <!-- Price block -->
-    <div class="not-prose my-6 rounded-md border border-sepia-200 bg-cream-100 p-5">
-      <div class="font-display text-4xl font-semibold tracking-tight tabular-nums text-ink-900">
-        {product.priceFromGBP !== undefined ? `from ${gbp.format(product.priceFromGBP)}` : 'Price varies'}
+    <!-- Two-column hero: gallery (left) + buy box (right) -->
+    <div class="mt-5 grid gap-10 lg:grid-cols-[1fr_420px]">
+      <!-- Gallery -->
+      <div class="flex flex-col gap-3">
+        <ProductMedia
+          kind={mediaKind}
+          src={product.image}
+          alt={product.name}
+          ratio="3/2"
+          priority
+          glyph="text-[96px]"
+          rounded="rounded-xl"
+          class="my-0"
+        />
+        {product.image && (
+          <div class="flex gap-2.5">
+            <div class="h-16 w-20 shrink-0 overflow-hidden rounded-md border-2 border-terracotta-600 bg-cream-200">
+              <img src={product.image} alt="" loading="lazy" class="h-full w-full object-cover" />
+            </div>
+          </div>
+        )}
+        <p class="font-body text-[13px] leading-[1.5] text-sepia-400">
+          {product.image
+            ? 'Image is the manufacturer listing image, not our own bench photo.'
+            : 'No bench photo on file yet — a clean placeholder, never a borrowed image passed off as our own.'}
+        </p>
       </div>
-      {product.priceCheckedAt && (
-        <div class="mt-1 font-data text-xs text-umber-600">price checked {product.priceCheckedAt}</div>
-      )}
-      {ctaAvailable && primaryStore && (
-        <a
-          href={goHref(product.id, primaryStore)}
-          rel="sponsored nofollow noopener"
-          target="_blank"
-          aria-label={`Check ${product.name} price at ${STORE_LABELS[primaryStore]} — opens in new tab`}
-          class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-terracotta-600 px-5 py-3 text-cream-50 transition-colors hover:bg-terracotta-700 sm:w-auto"
-        >
-          <span class="text-sm font-semibold uppercase tracking-[0.12em]">
-            Check price at {STORE_LABELS[primaryStore]} <span aria-hidden="true">&rarr;</span>
-          </span>
-        </a>
-      )}
+
+      <!-- Buy box -->
+      <div class="flex flex-col gap-4">
+        <div class="font-data text-[12px] font-medium uppercase tracking-[0.12em] text-terracotta-600">
+          {categoryName}{product.brand ? ` · ${product.brand}` : ''}
+        </div>
+        <h1 class="font-display text-[26px] font-semibold leading-[1.22] tracking-tight text-ink-900 sm:text-[30px]">{product.name}</h1>
+
+        <div class="rounded-xl border border-sepia-200 bg-cream-100 p-5">
+          <div class="flex items-center gap-3">
+            <div class="flex flex-col gap-0.5">
+              <span class="font-display text-[34px] font-bold tabular-nums leading-none text-ink-900">
+                {product.priceFromGBP !== undefined ? `from ${gbp.format(product.priceFromGBP)}` : 'Price varies'}
+              </span>
+              {primaryStore && (
+                <span class="font-data text-[10px] font-medium uppercase tracking-[0.1em] text-umber-600">
+                  On {STORE_LABELS[primaryStore]}
+                </span>
+              )}
+            </div>
+            {ctaAvailable && (
+              <span class="ml-auto inline-flex items-center gap-1.5 rounded-full bg-[#3e8a64] py-1 pl-2.5 pr-3">
+                <span class="h-1.5 w-1.5 rounded-full bg-white" aria-hidden="true"></span>
+                <span class="font-data text-[9px] font-bold uppercase tracking-[0.05em] text-white">In stock</span>
+              </span>
+            )}
+          </div>
+
+          {ctaAvailable && primaryStore && (
+            <a
+              href={goHref(product.id, primaryStore)}
+              rel="sponsored nofollow noopener"
+              target="_blank"
+              aria-label={`Buy ${product.name} on ${STORE_LABELS[primaryStore]} — opens in new tab`}
+              class="mt-3.5 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-terracotta-600 px-5 py-3.5 font-body text-base font-bold text-white transition-colors hover:bg-terracotta-700"
+            >
+              <span>Buy on {STORE_LABELS[primaryStore]}</span>
+              <span aria-hidden="true">&rarr;</span>
+            </a>
+          )}
+
+          {compareAvailable && compareStore ? (
+            <a
+              href={goHref(product.id, compareStore)}
+              rel="sponsored nofollow noopener"
+              target="_blank"
+              aria-label={`Compare ${product.name} on ${STORE_LABELS[compareStore]} UK — opens in new tab`}
+              class="mt-2.5 inline-flex w-full items-center justify-center rounded-lg border-[1.5px] border-ink-900 bg-white px-5 py-3.5 font-body text-base font-bold text-ink-900 transition-colors hover:bg-cream-100"
+            >
+              Compare on {STORE_LABELS[compareStore]} UK
+            </a>
+          ) : (
+            <a
+              href={`https://www.ebay.co.uk/sch/i.html?_nkw=${encodeURIComponent(product.name)}`}
+              rel="nofollow noopener"
+              target="_blank"
+              aria-label={`Compare ${product.name} on eBay UK — opens in new tab`}
+              class="mt-2.5 inline-flex w-full items-center justify-center rounded-lg border-[1.5px] border-ink-900 bg-white px-5 py-3.5 font-body text-base font-bold text-ink-900 transition-colors hover:bg-cream-100"
+            >
+              Compare on eBay UK
+            </a>
+          )}
+
+          <p class="mt-2.5 font-data text-[10px] leading-normal tracking-[0.02em] text-sepia-400">
+            {checkedOn && <>PRICE CHECKED {checkedOn} · </>}We may earn from qualifying purchases.
+          </p>
+        </div>
+      </div>
     </div>
 
-    <KeySpecs specs={keySpecs} />
-
-    {variants.length > 0 && (
-      <section class="not-prose my-8" aria-label="Variants">
-        <div class="mb-3 font-data text-[11px] font-semibold uppercase tracking-[0.18em] text-umber-600">Variants</div>
-        <div class="overflow-hidden rounded-md border border-sepia-200 bg-cream-50">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="bg-pine-700 text-cream-50">
-                <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.12em]">Variant</th>
-                <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.12em]">From</th>
-              </tr>
-            </thead>
-            <tbody>
-              {variants.map((v) => (
-                <tr class="border-b border-sepia-200 last:border-b-0 odd:bg-cream-50 even:bg-cream-200">
-                  <td class="px-4 py-3 font-data text-ink-900">{v.label}</td>
-                  <td class="px-4 py-3 font-data text-ink-900">{v.orig !== undefined ? gbp.format(v.orig) : '—'}</td>
-                </tr>
+    <!-- Variants + Specifications -->
+    {(variants.length > 0 || keySpecs) && (
+      <div class="mt-8 grid gap-10 lg:grid-cols-[1fr_480px]">
+        {variants.length > 0 ? (
+          <section aria-label="Variants">
+            <div class="font-data text-[12px] font-bold uppercase tracking-[0.14em] text-umber-600">Variants</div>
+            <div class="mt-3.5 flex flex-wrap gap-2.5">
+              {variants.map((v, i) => (
+                <div
+                  class:list={[
+                    'flex flex-col gap-0.5 rounded-lg px-4 py-3',
+                    i === 0 ? 'border-2 border-terracotta-600 bg-cream-100' : 'border border-sepia-200 bg-white',
+                  ]}
+                >
+                  <span class="font-body text-[15px] font-semibold text-ink-900">{v.label}</span>
+                  <span class="font-data text-[13px] font-bold text-umber-600">
+                    {v.orig !== undefined ? gbp.format(v.orig) : '—'}
+                  </span>
+                </div>
               ))}
-            </tbody>
-          </table>
-        </div>
-        <p class="mt-2 font-data text-[11px] text-umber-600">
-          Prices are research estimates — the store has the final say.
-        </p>
-      </section>
+            </div>
+            <p class="mt-3 font-body text-[13px] leading-[1.48] text-sepia-400">
+              Prices are the standard listing price (not new-user promo){checkedOn ? `, checked ${checkedOn.toLowerCase()}` : ''}.
+            </p>
+          </section>
+        ) : (
+          <div></div>
+        )}
+        <KeySpecs specs={keySpecs} title="Specifications" />
+      </div>
     )}
 
     <!-- Reviewed & mentioned in -->
-    <section class="not-prose my-10" aria-label="Reviewed and mentioned in">
-      <h2 class="font-display text-2xl font-semibold tracking-tight text-ink-900">Reviewed &amp; mentioned in</h2>
-      {mentions.length > 0 ? (
-        <ul class="mt-6 grid gap-6 sm:grid-cols-2">
-          {mentions.map((m) => (
-            <li>
-              <a href={m.href} class="group block">
-                <div class="overflow-hidden rounded-md border border-sepia-200 bg-cream-100">
-                  <img
-                    src={m.image}
-                    alt={m.title}
-                    loading="lazy"
-                    class="block aspect-[16/9] w-full object-cover transition-transform group-hover:scale-[1.02]"
-                  />
-                </div>
-                <div class="mt-3 font-data text-[10px] font-semibold uppercase tracking-[0.2em] text-terracotta-600">
-                  {m.category.replace(/-/g, ' ')} · {m.kind}
-                </div>
-                <h3 class="mt-2 font-display text-lg font-semibold leading-snug text-ink-900 group-hover:text-pine-700">{m.title}</h3>
-                <div class="mt-1 font-data text-[11px] text-umber-600">
-                  {dateFmt.format(m.publishedAt)}
-                  {m.rating !== undefined && <span> · <span class="text-ink-900">{m.rating.toFixed(1)}/5</span></span>}
-                </div>
-              </a>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p class="mt-4 text-sm text-umber-600">No published articles mention this product yet — a test may be running.</p>
-      )}
-    </section>
+    {mentionEntries.length > 0 ? (
+      <div class="mt-10 rounded-xl bg-cream-100 px-6 py-8">
+        <RelatedArticles entries={mentionEntries} title="Reviewed & mentioned in" kicker />
+      </div>
+    ) : (
+      <section class="mt-10" aria-label="Reviewed and mentioned in">
+        <h2 class="font-data text-xs font-bold uppercase tracking-[0.14em] text-terracotta-600">Reviewed &amp; mentioned in</h2>
+        <p class="mt-3 font-body text-sm text-umber-600">No published articles mention this product yet — a test may be running.</p>
+      </section>
+    )}
   </div>
 </BaseLayout>

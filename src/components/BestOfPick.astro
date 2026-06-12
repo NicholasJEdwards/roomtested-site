@@ -1,0 +1,121 @@
+---
+// The listicle ranked-entry composite (one per ranked pick). Matches the RankCard in the
+// roundup frame (63:3): big pink #rank + ProductMedia stacked on the left; right column =
+// pink tier label, name + inline RatingBadge + price, blurb, inline PROS/CONS, a primary
+// AffiliateButton, a "Read the full review" link and a price-checked stamp. The #1 entry
+// is pink-bordered + cream-tinted. Built only from gear actually tested.
+import { gbp, getProduct, goHref, STORE_LABELS, type Store } from '../lib/products';
+import ProductMedia from './ProductMedia.astro';
+import RatingBadge from './mdx/RatingBadge.astro';
+
+interface Props {
+  rank: number;
+  productId: string;
+  tier?: string;
+  name?: string;
+  rating?: number;
+  blurb: string;
+  pros?: string[];
+  cons?: string[];
+  reviewHref?: string;
+}
+
+const { rank, productId, tier, name, rating, blurb, pros = [], cons = [], reviewHref } = Astro.props;
+const product = getProduct(productId);
+const displayName = name ?? product?.name ?? productId;
+const price = product?.priceFromGBP !== undefined ? gbp.format(product.priceFromGBP) : undefined;
+const primaryStore: Store | undefined = product
+  ? ((Object.keys(product.links) as Store[])[0])
+  : undefined;
+const buyHref = product && primaryStore ? goHref(product.id, primaryStore) : undefined;
+const isTop = rank === 1;
+const checkedOn = product?.priceCheckedAt
+  ? new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short' })
+      .format(new Date(product.priceCheckedAt))
+      .toUpperCase()
+  : null;
+---
+
+<div
+  class:list={[
+    'flex flex-col gap-6 rounded-xl border p-6 sm:flex-row sm:items-start',
+    isTop ? 'border-2 border-terracotta-600 bg-cream-100' : 'border-sepia-200 bg-white',
+  ]}
+>
+  <div class="flex shrink-0 flex-col items-center gap-3.5">
+    <div class="flex items-start font-display font-bold leading-none text-terracotta-600">
+      <span class="text-[26px]">#</span>
+      <span class="text-[52px]">{rank}</span>
+    </div>
+    <ProductMedia
+      kind={product?.image ? 'listing' : 'own'}
+      src={product?.image}
+      alt={displayName}
+      ratio="200/150"
+      rounded="rounded-md"
+      glyph="text-[34px]"
+      class="my-0 w-full sm:w-[200px]"
+    />
+  </div>
+
+  <div class="flex flex-1 flex-col gap-2.5">
+    {tier && (
+      <div class="font-data text-[11px] font-bold uppercase tracking-[0.14em] text-terracotta-600">{tier}</div>
+    )}
+    <div class="flex flex-wrap items-baseline gap-x-3.5 gap-y-1">
+      <span class="font-display text-2xl font-semibold text-ink-900">{displayName}</span>
+      {rating !== undefined && <RatingBadge score={rating} max={10} inline />}
+      {price && <span class="font-data text-base font-bold text-umber-600">{price}</span>}
+    </div>
+    <p class="font-body text-base leading-[1.58] text-ink-900">{blurb}</p>
+
+    {(pros.length > 0 || cons.length > 0) && (
+      <div class="flex flex-wrap gap-x-7 gap-y-3 pt-0.5">
+        {pros.length > 0 && (
+          <div class="flex flex-col gap-1.5">
+            <div class="font-data text-[10px] font-bold uppercase tracking-[0.1em] text-ink-900">Pros</div>
+            {pros.map((p) => (
+              <div class="flex gap-1.5">
+                <span class="w-3 shrink-0 font-body text-[13px] font-bold text-ink-900" aria-hidden="true">+</span>
+                <span class="font-body text-sm leading-[1.4] text-umber-600">{p}</span>
+              </div>
+            ))}
+          </div>
+        )}
+        {cons.length > 0 && (
+          <div class="flex flex-col gap-1.5">
+            <div class="font-data text-[10px] font-bold uppercase tracking-[0.1em] text-brick-600">Cons</div>
+            {cons.map((c) => (
+              <div class="flex gap-1.5">
+                <span class="w-3 shrink-0 font-body text-[13px] font-bold text-brick-600" aria-hidden="true">&ndash;</span>
+                <span class="font-body text-sm leading-[1.4] text-umber-600">{c}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    )}
+
+    <div class="flex flex-wrap items-center gap-x-3 gap-y-2 pt-1">
+      {buyHref && primaryStore && (
+        <a
+          href={buyHref}
+          rel="sponsored nofollow noopener"
+          target="_blank"
+          aria-label={`Check price of ${displayName} on ${STORE_LABELS[primaryStore]} — opens in new tab`}
+          class="inline-flex items-center gap-1.5 rounded-md bg-terracotta-600 px-5 py-3 font-body text-[15px] font-bold text-white transition-colors hover:bg-terracotta-700"
+        >
+          Check price <span aria-hidden="true">&rarr;</span>
+        </a>
+      )}
+      {reviewHref && (
+        <a href={reviewHref} class="font-body text-[15px] font-semibold text-ink-900 underline-offset-2 hover:underline">
+          Read the full review
+        </a>
+      )}
+      {checkedOn && (
+        <span class="font-data text-[10px] tracking-[0.02em] text-sepia-400">· PRICE CHECKED {checkedOn}</span>
+      )}
+    </div>
+  </div>
+</div>

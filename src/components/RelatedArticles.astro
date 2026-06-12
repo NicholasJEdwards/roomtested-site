@@ -1,15 +1,25 @@
 ---
-// Horizontally-scrollable carousel of related articles, shown at the end of an article.
-// Accessible: a labelled region, scroll-snap, real <a> cards (keyboard-focusable and
-// scrolled into view on focus), prev/next buttons for pointer users. No-ops when empty.
+// Horizontal carousel of related content — "Related reviews & guides" at the foot of an
+// article, and the "Reviewed & mentioned in" rail on the product page (same card, a
+// different heading + an optional pink tag chip per entry). Cards match the RelatedCard
+// swatch (35:4): cream-200 image, pink mono kicker, Rubik headline, mono meta row.
+// Accessible: labelled region, scroll-snap, real <a> cards, prev/next for pointer users.
+// No-ops when empty.
 import type { ArticleRef } from '../lib/links';
 
-interface Props {
-  entries: ArticleRef[];
-  title?: string;
+interface Entry extends ArticleRef {
+  /** Product-page rail only — pink chip e.g. "FULL REVIEW" / "RANKED #1" / "WINNER". */
+  tag?: string;
 }
 
-const { entries, title = 'Related reviews & guides' } = Astro.props;
+interface Props {
+  entries: Entry[];
+  title?: string;
+  /** Pink mono section heading (product rail) vs the default Rubik heading. */
+  kicker?: boolean;
+}
+
+const { entries, title = 'Related reviews & guides', kicker = false } = Astro.props;
 const has = entries.length > 0;
 const dateFmt = new Intl.DateTimeFormat('en-GB', { month: 'short', day: 'numeric', year: 'numeric' });
 ---
@@ -17,23 +27,27 @@ const dateFmt = new Intl.DateTimeFormat('en-GB', { month: 'short', day: 'numeric
 {has && (
   <section class="not-prose my-12" aria-label={title}>
     <div class="flex items-baseline justify-between gap-4">
-      <h2 class="font-display text-2xl font-semibold tracking-tight text-ink-900">{title}</h2>
+      {kicker ? (
+        <h2 class="font-data text-xs font-bold uppercase tracking-[0.14em] text-terracotta-600">{title}</h2>
+      ) : (
+        <h2 class="font-display text-2xl font-semibold tracking-tight text-ink-900">{title}</h2>
+      )}
       <div class="hidden gap-2 sm:flex" data-carousel-controls>
         <button
           type="button"
           data-carousel-prev
           aria-label="Scroll to previous related articles"
-          class="flex h-9 w-9 items-center justify-center rounded-full border border-sepia-200 bg-cream-50 text-ink-900 transition-colors hover:border-pine-700 hover:text-pine-700"
+          class="flex h-9 w-9 items-center justify-center rounded-full border border-sepia-200 bg-white font-data text-ink-900 transition-colors hover:border-pine-700 hover:text-pine-700"
         >
-          <span aria-hidden="true">&larr;</span>
+          <span aria-hidden="true">&lsaquo;</span>
         </button>
         <button
           type="button"
           data-carousel-next
           aria-label="Scroll to next related articles"
-          class="flex h-9 w-9 items-center justify-center rounded-full border border-sepia-200 bg-cream-50 text-ink-900 transition-colors hover:border-pine-700 hover:text-pine-700"
+          class="flex h-9 w-9 items-center justify-center rounded-full border border-sepia-200 bg-white font-data text-ink-900 transition-colors hover:border-pine-700 hover:text-pine-700"
         >
-          <span aria-hidden="true">&rarr;</span>
+          <span aria-hidden="true">&rsaquo;</span>
         </button>
       </div>
     </div>
@@ -44,22 +58,31 @@ const dateFmt = new Intl.DateTimeFormat('en-GB', { month: 'short', day: 'numeric
     >
       {entries.map((e) => (
         <li class="w-[78%] shrink-0 snap-start sm:w-[46%] lg:w-[31%]">
-          <a href={e.href} class="group block h-full">
-            <div class="overflow-hidden rounded-md border border-sepia-200 bg-cream-100">
+          <a href={e.href} class="group block h-full overflow-hidden rounded-md border border-sepia-200 bg-white transition-colors hover:border-pine-700">
+            <div class="aspect-[280/150] w-full overflow-hidden bg-cream-200">
               <img
                 src={e.image}
                 alt={e.title}
                 loading="lazy"
-                class="block aspect-[16/9] w-full object-cover transition-transform group-hover:scale-[1.02]"
+                class="block h-full w-full object-cover transition-transform group-hover:scale-[1.02]"
               />
             </div>
-            <div class="mt-3 font-data text-[10px] font-semibold uppercase tracking-[0.2em] text-terracotta-600">
-              {e.category.replace(/-/g, ' ')} · {e.kind}
-            </div>
-            <h3 class="mt-2 font-display text-lg font-semibold leading-snug text-ink-900 group-hover:text-pine-700">{e.title}</h3>
-            <div class="mt-2 font-data text-[11px] text-umber-600">
-              {dateFmt.format(e.publishedAt)}
-              {e.rating !== undefined && <span> · <span class="text-ink-900">{e.rating.toFixed(1)}/5</span></span>}
+            <div class="flex flex-col gap-1.5 px-4 pb-4 pt-3.5">
+              <div class="flex items-center gap-2">
+                <span class="flex-1 font-data text-[10px] font-medium uppercase tracking-[0.1em] text-terracotta-600">
+                  {e.category.replace(/-/g, ' ')} · {e.kind}
+                </span>
+                {e.tag && (
+                  <span class="rounded-sm bg-ochre-500 px-1.5 py-0.5 font-data text-[9px] font-bold uppercase tracking-[0.03em] text-ink-900">
+                    {e.tag}
+                  </span>
+                )}
+              </div>
+              <h3 class="font-display text-[17px] font-semibold leading-[1.28] text-ink-900 group-hover:text-pine-700">{e.title}</h3>
+              <div class="font-data text-[11px] tracking-[0.02em] text-umber-600">
+                {dateFmt.format(e.publishedAt)}
+                {e.rating !== undefined && e.rating > 0 && <span> · <span class="text-ink-900">{e.rating.toFixed(1)}</span></span>}
+              </div>
             </div>
           </a>
         </li>

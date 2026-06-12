@@ -1,14 +1,21 @@
 ---
+// Multi-product head-to-head table. ink-900 header band, white mono product labels; the
+// winner column header = pink fill and its body cells = light-pink through every row;
+// zebra on non-winner cells. Mono values. "Updated <date>" stamp. On mobile the column
+// grid is unreadable, so it collapses to stacked per-product cards. Caption: winner =
+// best value for a typical setup, not the highest raw score.
 import { gbp, getProducts } from '../../lib/products';
 
 interface Props {
   productIds: string[];
   specs?: string[];
   winnerProductId?: string;
+  updatedOn?: string;
 }
 
-const { productIds, specs, winnerProductId } = Astro.props;
+const { productIds, specs, winnerProductId, updatedOn } = Astro.props;
 const products = getProducts(productIds);
+const winnerIndex = products.findIndex((p) => p.id === winnerProductId);
 const specKeys =
   specs ?? Array.from(new Set(products.flatMap((p) => Object.keys(p.specs ?? {}))));
 
@@ -17,7 +24,6 @@ function formatCell(v: unknown): string {
   if (v === undefined || v === null) return '—';
   return String(v);
 }
-
 function formatSpecLabel(k: string): string {
   return k.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
@@ -34,41 +40,86 @@ const rows: { label: string; values: string[] }[] = [
     values: products.map((p) => formatCell(p.specs?.[k])),
   })),
 ];
+
+const WIN_BG = '#FCE8F3'; // light-pink winner column fill (off-palette, harmonises)
 ---
 
 {products.length > 0 ? (
-  <div class="not-prose my-8 overflow-hidden rounded-md border border-sepia-200 bg-cream-50">
-    <div class="overflow-x-auto">
-      <table class="w-full text-sm">
-        <thead>
-          <tr class="bg-pine-700 text-cream-50">
-            <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.12em]">Spec</th>
-            {products.map((p) => (
-              <th class="px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.12em]">
-                <span class="inline-flex items-center gap-2">
-                  {p.name}
-                  {winnerProductId === p.id && (
-                    <span class="rounded-sm bg-ochre-500/95 px-2 py-0.5 font-data text-[9px] uppercase tracking-widest text-ink-900">
-                      Our pick
-                    </span>
-                  )}
-                </span>
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row) => (
-            <tr class="border-b border-sepia-200 last:border-b-0 odd:bg-cream-50 even:bg-cream-200">
-              <td class="px-4 py-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-umber-600">{row.label}</td>
-              {row.values.map((v) => (
-                <td class="px-4 py-3 font-data text-ink-900">{v}</td>
+  <div class="not-prose my-8">
+    {updatedOn && (
+      <div class="mb-2 font-data text-[11px] uppercase tracking-[0.05em] text-umber-600">Updated {updatedOn}</div>
+    )}
+
+    {/* Desktop / tablet: column-per-product table */}
+    <div class="hidden overflow-hidden rounded-md border border-sepia-200 bg-white sm:block">
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-ink-900 text-white">
+              <th class="px-4 py-3 text-left font-data text-[11px] font-bold uppercase tracking-[0.1em]">Spec</th>
+              {products.map((p, i) => (
+                <th
+                  class:list={[
+                    'px-4 py-3 text-left font-data text-[11px] font-bold uppercase tracking-[0.1em]',
+                    i === winnerIndex && 'bg-terracotta-600',
+                  ]}
+                >
+                  <span class="inline-flex items-center gap-2">
+                    {p.name}
+                    {i === winnerIndex && (
+                      <span class="rounded-sm bg-white/90 px-1.5 py-0.5 font-data text-[9px] font-bold uppercase tracking-[0.03em] text-terracotta-700">
+                        Our pick
+                      </span>
+                    )}
+                  </span>
+                </th>
               ))}
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {rows.map((row, r) => (
+              <tr class="border-t border-sepia-200">
+                <td class:list={['px-4 py-3 font-body text-[13px] font-semibold text-umber-600', r % 2 === 1 ? 'bg-cream-100' : 'bg-white']}>{row.label}</td>
+                {row.values.map((v, i) => (
+                  <td
+                    class:list={['px-4 py-3 font-data text-ink-900', i !== winnerIndex && (r % 2 === 1 ? 'bg-cream-100' : 'bg-white')]}
+                    style={i === winnerIndex ? `background:${WIN_BG}` : undefined}
+                  >
+                    {v}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
+
+    {/* Mobile: stacked per-product cards */}
+    <div class="space-y-4 sm:hidden">
+      {products.map((p, i) => (
+        <div
+          class:list={['overflow-hidden rounded-md border bg-white', i === winnerIndex ? 'border-terracotta-600' : 'border-sepia-200']}
+        >
+          <div class:list={['flex items-center gap-2 px-4 py-2.5', i === winnerIndex ? 'bg-terracotta-600' : 'bg-ink-900']}>
+            <span class="flex-1 font-display text-sm font-semibold text-white">{p.name}</span>
+            {i === winnerIndex && (
+              <span class="rounded-sm bg-white/90 px-1.5 py-0.5 font-data text-[9px] font-bold uppercase tracking-[0.03em] text-terracotta-700">Our pick</span>
+            )}
+          </div>
+          {rows.map((row, r) => (
+            <div class:list={['flex items-center gap-3 px-4 py-2.5', r % 2 === 1 ? 'bg-cream-100' : 'bg-white']}>
+              <span class="flex-1 font-body text-[13px] font-semibold text-umber-600">{row.label}</span>
+              <span class="text-right font-data text-xs text-ink-900">{row.values[i]}</span>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
+
+    <p class="mt-2 font-body text-[13px] italic leading-normal text-umber-600">
+      Winner = best value for a typical setup, not the highest raw score.
+    </p>
   </div>
 ) : (
   <div class="not-prose my-6 rounded-md border border-ochre-500 bg-cream-100 p-4 text-sm text-ink-900">

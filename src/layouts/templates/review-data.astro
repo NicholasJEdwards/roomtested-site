@@ -11,7 +11,9 @@ import Faq from '../../components/Faq.astro';
 import JsonLd from '../../components/JsonLd.astro';
 import KeySpecs from '../../components/KeySpecs.astro';
 import LastUpdated from '../../components/LastUpdated.astro';
+import PriceWidget from '../../components/mdx/PriceWidget.astro';
 import ProsCons from '../../components/mdx/ProsCons.astro';
+import RatingBadge from '../../components/mdx/RatingBadge.astro';
 import RelatedArticles from '../../components/RelatedArticles.astro';
 import Toc from '../../components/Toc.astro';
 import Verdict from '../../components/Verdict.astro';
@@ -41,6 +43,7 @@ const specsFromRegistry =
       }))
     : undefined;
 const keySpecs = d.keySpecs ?? specsFromRegistry;
+const categoryLabel = d.category.replace(/-/g, ' ');
 ---
 
 <JsonLd
@@ -82,34 +85,39 @@ const keySpecs = d.keySpecs ?? specsFromRegistry;
     <a href={`/c/${d.category}`} class="hover:underline">{d.category.replace(/-/g, ' ')}</a>
   </nav>
 
-  <header class="mt-4">
-    <h1 class="font-display text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">{d.title}</h1>
-    <p class="mt-2 text-lg text-umber-600">{d.description}</p>
-    <div class="mt-4 flex flex-wrap items-center gap-4 text-sm">
-      <span class="inline-flex items-center rounded bg-ink-900 px-2 py-0.5 font-medium text-cream-50">{d.rating.toFixed(1)} / 5</span>
-      <span class="text-umber-600">By {d.author}</span>
-      <LastUpdated date={d.updatedAt ?? d.publishedAt} />
-      <LastUpdated date={d.lastTested} label="Last tested" />
+  <header class="mt-5">
+    <div class="font-data text-[13px] font-medium uppercase tracking-[0.12em] text-terracotta-600">{categoryLabel} · Spec deep-dive</div>
+    <h1 class="mt-2 font-display text-[28px] font-semibold leading-[1.2] tracking-tight text-ink-900 sm:text-[40px] sm:leading-[1.18]">{d.title}</h1>
+    <p class="mt-3 font-body text-lg leading-[1.55] text-umber-600">{d.description}</p>
+    <div class="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
+      <AuthorStrip author={d.author} credential="Bench testing · hands-on" inline />
+      {d.rating > 0 && <RatingBadge score={d.rating} max={5} inline />}
+      <div class="flex flex-wrap items-center gap-x-4 gap-y-1 font-data text-[11px] uppercase tracking-[0.05em] text-umber-600">
+        <LastUpdated date={d.publishedAt} label="Published" compact />
+        <LastUpdated date={d.lastTested} label="Tested" compact />
+      </div>
     </div>
   </header>
 
   <AffiliateDisclosure />
 
-  <KeySpecs specs={keySpecs} title="The specs" />
+  <KeySpecs specs={keySpecs} title="Specifications" />
 
-  {d.rating > 0 && <Verdict rating={d.rating} oneLiner={d.description} pros={d.pros} cons={d.cons} />}
+  {d.rating > 0 && <Verdict rating={d.rating} max={5} oneLiner={d.description} />}
 
   <Toc headings={headings} />
 
-  <div class="mt-6 leading-7 text-ink-900 [&>h2]:mt-10 [&>h2]:font-display [&>h2]:text-2xl [&>h2]:font-semibold [&>h2]:tracking-tight [&>h3]:mt-8 [&>h3]:font-display [&>h3]:text-xl [&>h3]:font-semibold [&>p]:mt-4 [&>ul]:mt-4 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:mt-4 [&>ol]:list-decimal [&>ol]:pl-5 [&>ul>li]:mt-1 [&>ol>li]:mt-1">
+  <div class="mt-6 font-body leading-[1.65] text-ink-900 [&>h2]:mt-10 [&>h2]:font-display [&>h2]:text-2xl [&>h2]:font-semibold [&>h2]:tracking-tight [&>h3]:mt-8 [&>h3]:font-display [&>h3]:text-xl [&>h3]:font-semibold [&>p]:mt-4 [&>ul]:mt-4 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:mt-4 [&>ol]:list-decimal [&>ol]:pl-5 [&>ul>li]:mt-1 [&>ol>li]:mt-1">
     <Content components={mdxComponents} />
   </div>
 
   {hasProsCons && <ProsCons pros={d.pros} cons={d.cons} />}
 
+  {product && <PriceWidget productId={d.productId} compareStore="ebay" />}
+
   <Faq faq={d.faq} />
 
-  <AuthorStrip author={d.author} />
-
   <RelatedArticles entries={related} />
+
+  <AuthorStrip author={d.author} />
 </article>

@@ -1,6 +1,10 @@
 ---
 import { SITE } from '../consts';
 
+// Global nav — matches every template frame's GlobalNav: white bg, Rubik-SemiBold
+// wordmark, Rubik-Medium ink links (Reviews / Guides / Comparisons / About), bottom
+// hairline. Sticky + accessible (active state, focus). Mobile collapses to wordmark + ≡
+// (a details/summary disclosure, no JS).
 const nav: { label: string; href: string }[] = [
   { label: 'Reviews', href: '/reviews' },
   { label: 'Guides', href: '/guides' },
@@ -12,19 +16,15 @@ const path = Astro.url.pathname;
 const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWith(href));
 ---
 
-<header class="sticky top-0 z-30 border-b border-sepia-200 bg-cream-50/92 backdrop-blur supports-[backdrop-filter]:bg-cream-50/80">
-  <div class="mx-auto flex max-w-6xl items-center justify-between gap-8 px-4 py-5 sm:py-6">
-    <a href="/" class="group flex items-center gap-3">
-      <span class="font-display text-[28px] font-semibold leading-none tracking-tight text-ink-900 transition-colors group-hover:text-pine-700">
-        {SITE.name}
-      </span>
-      <span class="hidden h-5 w-px bg-sepia-200 sm:block" aria-hidden="true"></span>
-      <span class="hidden font-display text-[13px] italic leading-none text-umber-600 sm:inline">
-        tested in a real room
-      </span>
+<header class="sticky top-0 z-30 border-b border-sepia-200 bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/85">
+  <div class="mx-auto flex max-w-6xl items-center justify-between gap-8 px-4 py-4 sm:py-5">
+    <a href="/" class="font-display text-[22px] font-semibold leading-none tracking-tight text-ink-900 transition-colors hover:text-pine-700">
+      {SITE.name}
     </a>
-    <nav aria-label="Primary">
-      <ul class="flex items-center gap-7 sm:gap-9">
+
+    <!-- Desktop nav -->
+    <nav aria-label="Primary" class="hidden sm:block">
+      <ul class="flex items-center gap-7">
         {nav.map((item) => (
           <li>
             <a
@@ -32,8 +32,8 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
               class:list={[
                 'relative font-display text-[15px] font-medium transition-colors',
                 isActive(item.href)
-                  ? 'text-pine-700 after:absolute after:inset-x-0 after:-bottom-[22px] after:h-[2px] after:bg-pine-700'
-                  : 'text-ink-900 hover:text-pine-700',
+                  ? 'text-ink-900 after:absolute after:inset-x-0 after:-bottom-[18px] after:h-[2px] after:bg-ink-900'
+                  : 'text-ink-900/85 hover:text-ink-900',
               ]}
               aria-current={isActive(item.href) ? 'page' : undefined}
             >
@@ -43,5 +43,31 @@ const isActive = (href: string) => (href === '/' ? path === '/' : path.startsWit
         ))}
       </ul>
     </nav>
+
+    <!-- Mobile nav -->
+    <details class="relative sm:hidden [&[open]>summary_.menu-x]:block [&[open]>summary_.menu-bars]:hidden">
+      <summary class="flex cursor-pointer list-none items-center text-ink-900 [&::-webkit-details-marker]:hidden" aria-label="Menu">
+        <span class="menu-bars font-data text-2xl leading-none" aria-hidden="true">&#8801;</span>
+        <span class="menu-x hidden font-data text-2xl leading-none" aria-hidden="true">&times;</span>
+      </summary>
+      <nav aria-label="Primary" class="absolute right-0 top-[calc(100%+12px)] w-44 rounded-md border border-sepia-200 bg-white p-2 shadow-sm">
+        <ul class="flex flex-col">
+          {nav.map((item) => (
+            <li>
+              <a
+                href={item.href}
+                class:list={[
+                  'block rounded px-3 py-2 font-display text-[15px] font-medium transition-colors hover:bg-cream-100',
+                  isActive(item.href) ? 'text-ink-900' : 'text-ink-900/85',
+                ]}
+                aria-current={isActive(item.href) ? 'page' : undefined}
+              >
+                {item.label}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </details>
   </div>
 </header>

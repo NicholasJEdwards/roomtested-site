@@ -1,12 +1,22 @@
 ---
+// A semantic <time> stamp. Styling-neutral: it inherits font / size / case / colour from
+// its parent so it composes into either a mono uppercase stamp row (review header) or a
+// plain meta line. `compact` uses a short "12 Jun 2026" date (for the mono stamps).
 interface Props {
   date: Date;
   label?: string;
+  /** Short date form (e.g. "12 Jun 2026") for mono stamp rows. */
+  compact?: boolean;
+  class?: string;
 }
 
-const { date, label = 'Updated' } = Astro.props;
+const { date, label = 'Updated', compact = false, class: className } = Astro.props;
 const iso = date.toISOString();
-const human = date.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
+const human = date.toLocaleDateString('en-GB', {
+  year: 'numeric',
+  month: compact ? 'short' : 'long',
+  day: 'numeric',
+});
 ---
 
-<time datetime={iso} class="text-sm text-umber-600">{label}: {human}</time>
+<time datetime={iso} class:list={[className]}>{label} {human}</time>

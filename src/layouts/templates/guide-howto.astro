@@ -31,6 +31,13 @@ const url = `/guides/${entry.id}`;
 const ogImage = `/cards/guides/${entry.id}/og.png`;
 // HowTo totalTime from estimatedMinutes, as an ISO-8601 duration.
 const totalTime = d.estimatedMinutes ? `PT${d.estimatedMinutes}M` : undefined;
+const categoryLabel = d.category.replace(/-/g, ' ');
+// Outlined meta chips (mono label + value) — only the ones we actually have.
+const chips: { label: string; value: string }[] = [
+  { label: 'Difficulty', value: d.difficulty },
+  ...(d.estimatedMinutes ? [{ label: 'Time', value: `${d.estimatedMinutes} min` }] : []),
+  ...(d.steps && d.steps.length > 0 ? [{ label: 'Steps', value: String(d.steps.length) }] : []),
+];
 ---
 
 <JsonLd
@@ -61,20 +68,29 @@ const totalTime = d.estimatedMinutes ? `PT${d.estimatedMinutes}M` : undefined;
     <a href={`/c/${d.category}`} class="hover:underline">{d.category.replace(/-/g, ' ')}</a>
   </nav>
 
-  <header class="mt-4">
-    <h1 class="font-display text-3xl font-semibold tracking-tight text-ink-900 sm:text-4xl">{d.title}</h1>
-    <p class="mt-2 text-lg text-umber-600">{d.description}</p>
-    <div class="mt-4 flex flex-wrap items-center gap-4 text-sm text-umber-600">
-      <span class="inline-flex items-center rounded bg-cream-200 px-2 py-0.5 font-medium capitalize text-ink-900">{d.difficulty}</span>
-      {d.estimatedMinutes && <span>{d.estimatedMinutes} min</span>}
-      <span>By {d.author}</span>
-      <LastUpdated date={d.updatedAt ?? d.publishedAt} />
+  <header class="mt-5">
+    <div class="font-data text-[13px] font-medium uppercase tracking-[0.12em] text-terracotta-600">{categoryLabel} · Guide</div>
+    <h1 class="mt-2 font-display text-[28px] font-semibold leading-[1.2] tracking-tight text-ink-900 sm:text-[40px] sm:leading-[1.18]">{d.title}</h1>
+    <p class="mt-3 font-body text-lg leading-[1.55] text-umber-600">{d.description}</p>
+    <div class="mt-5 flex flex-wrap items-center gap-x-6 gap-y-3">
+      <AuthorStrip author={d.author} credential="Hands-on walkthrough" inline />
+      <div class="font-data text-[11px] uppercase tracking-[0.05em] text-umber-600">
+        <LastUpdated date={d.updatedAt ?? d.publishedAt} label="Updated" compact />
+      </div>
+    </div>
+    <div class="mt-4 flex flex-wrap gap-2.5">
+      {chips.map((c) => (
+        <span class="inline-flex items-center gap-1.5 rounded-full border border-sepia-200 bg-white px-3 py-1.5 font-data text-[11px] tracking-[0.03em]">
+          <span class="uppercase text-sepia-400">{c.label}</span>
+          <span class="font-medium capitalize text-ink-900">{c.value}</span>
+        </span>
+      ))}
     </div>
   </header>
 
   <AffiliateDisclosure />
 
-  <Toc headings={headings} />
+  <Toc headings={headings} title="The steps" numberPrefix="STEP " />
 
   <StepList steps={d.steps} name={d.title} totalTime={totalTime} />
 

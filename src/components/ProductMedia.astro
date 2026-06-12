@@ -1,12 +1,13 @@
 ---
-// Product / article imagery with an HONESTY LABEL. The label is the whole point:
-//   kind 'own'     → our own photo, no badge (the gold standard)
-//   kind '3d'      → a 3D model render — badged "3D model render" so it's never
-//                    mistaken for a real photo
-//   kind 'listing' → a manufacturer/store listing image — captioned as such
-// Uses Hero.astro's <Image>/<img> pattern (build-time optimisation when given a src).
-import { SITE } from '../consts';
-
+// Product / article imagery with an HONESTY LABEL — the label is the whole point:
+//   kind 'own'     → our own bench photo. NO badge. Optional plain caption.
+//   kind '3d'      → a 3D model render. Pink "3D MODEL RENDER" badge (top-left) +
+//                    italic caption naming it a render.
+//   kind 'listing' → a manufacturer/store listing image. Italic "Image: manufacturer
+//                    listing" caption. Never implies we shot it.
+// No src → a clean placeholder that carries NO provenance claim (no badge, no
+// "listing" caption) — the design's neutral cream-200 swatch with a glyph.
+// Matches the swatch frame (28:3) + product-page hero (65:4).
 type Kind = 'own' | '3d' | 'listing';
 
 interface Props {
@@ -14,46 +15,77 @@ interface Props {
   src?: string;
   alt: string;
   caption?: string;
+  /** Aspect ratio, e.g. "3/2" (default), "16/9", "4/3". Hero passes a wider one. */
+  ratio?: string;
+  /** Eager-load (above-the-fold hero). */
+  priority?: boolean;
+  /** Placeholder glyph size class (e.g. "text-5xl" hero, default for cards). */
+  glyph?: string;
+  /** Corner radius utility (hero is rounded-xl; default rounded-md). */
+  rounded?: string;
   class?: string;
 }
 
-const { kind, src, alt, caption, class: className } = Astro.props;
+const {
+  kind,
+  src,
+  alt,
+  caption,
+  ratio = '3/2',
+  priority = false,
+  glyph = 'text-4xl',
+  rounded = 'rounded-md',
+  class: className,
+} = Astro.props;
 
-// The honesty label describes the actual image, so the auto badge/caption only apply
-// when there IS one. The placeholder (no src) carries no claim; an explicit `caption`
-// still always shows.
-const badge = src && kind === '3d' ? '3D model render' : null;
-const defaultCaption = src && kind === 'listing' ? 'Manufacturer listing image' : null;
+// Badge + auto-caption only describe a REAL image; the placeholder claims nothing.
+const badge = src && kind === '3d' ? '3D MODEL RENDER' : null;
+const defaultCaption =
+  src && kind === '3d'
+    ? 'Illustrative 3D render (badged)'
+    : src && kind === 'listing'
+      ? 'Image: manufacturer listing'
+      : null;
 const resolvedCaption = caption ?? defaultCaption;
+// Captions for renders + listing images are italic (non-own provenance); plain otherwise.
+const captionItalic = !caption && (kind === '3d' || kind === 'listing');
+const aspectStyle = `aspect-ratio: ${ratio.replace('/', ' / ')}`;
 ---
 
 <figure class:list={['not-prose my-6', className]}>
-  <div class="relative overflow-hidden rounded-md border border-sepia-200 bg-cream-100">
+  <div class:list={['relative overflow-hidden bg-cream-200', rounded]}>
     {src ? (
       <img
         src={src}
         alt={alt}
-        loading="lazy"
-        class="block aspect-[16/9] w-full object-cover"
+        loading={priority ? 'eager' : 'lazy'}
+        class="block h-full w-full object-cover"
+        style={aspectStyle}
       />
     ) : (
       <div
-        class="flex aspect-[16/9] w-full items-center justify-center bg-cream-200 text-umber-600"
+        class="flex w-full items-center justify-center text-sepia-400"
+        style={aspectStyle}
         aria-hidden="true"
       >
-        <span class="font-data text-xs uppercase tracking-[0.22em]">{SITE.name}</span>
+        <span class:list={['font-body leading-none', glyph]}>&#9635;</span>
       </div>
     )}
     {badge && (
       <span
-        class="absolute right-2 top-2 rounded-sm bg-ochre-500/95 px-2 py-0.5 font-data text-[10px] font-semibold uppercase tracking-[0.14em] text-ink-900"
+        class="absolute left-3 top-3 rounded-sm bg-ochre-500 px-2 py-1 font-data text-[10px] font-bold uppercase tracking-[0.05em] text-ink-900"
       >
         {badge}
       </span>
     )}
   </div>
   {resolvedCaption && (
-    <figcaption class="mt-2 font-data text-[11px] uppercase tracking-wider text-umber-600">
+    <figcaption
+      class:list={[
+        'mt-2 font-body text-[13px] leading-normal text-umber-600',
+        captionItalic && 'italic',
+      ]}
+    >
       {resolvedCaption}
     </figcaption>
   )}

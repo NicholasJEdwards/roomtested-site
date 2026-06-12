@@ -1,6 +1,8 @@
 ---
-// FAQ list + its FAQPage JSON-LD. No-ops entirely when faq is absent/empty, so it's
-// safe to render unconditionally from a template.
+// FAQ list + its FAQPage JSON-LD. Matches the FaqItem swatch (34:24): each item is a
+// white bordered card with a Rubik-SemiBold question, a pink mono +/– toggle glyph, and
+// a Nunito-Sans answer. Native <details> = accessible + keyboard-operable with no JS;
+// the glyph flips +/– via CSS on [open]. No-ops entirely when faq is absent/empty.
 import { faqLd } from '../lib/jsonld';
 import JsonLd from './JsonLd.astro';
 
@@ -9,7 +11,7 @@ interface Props {
   title?: string;
 }
 
-const { faq, title = 'Frequently asked questions' } = Astro.props;
+const { faq, title = 'Frequently asked' } = Astro.props;
 const has = Array.isArray(faq) && faq.length > 0;
 ---
 
@@ -17,13 +19,16 @@ const has = Array.isArray(faq) && faq.length > 0;
   <section class="not-prose my-10" aria-label={title}>
     <JsonLd data={faqLd(faq!)} />
     <h2 class="font-display text-2xl font-semibold tracking-tight text-ink-900">{title}</h2>
-    <dl class="mt-6 divide-y divide-sepia-200 border-y border-sepia-200">
+    <div class="mt-6 space-y-3">
       {faq!.map((item) => (
-        <div class="py-5">
-          <dt class="font-display text-lg font-semibold leading-snug text-ink-900">{item.q}</dt>
-          <dd class="mt-2 leading-7 text-umber-600">{item.a}</dd>
-        </div>
+        <details class="group rounded-md border border-sepia-200 bg-white px-[18px] py-4 [&[open]>summary_.faq-glyph]:before:content-['–'] [&:not([open])>summary_.faq-glyph]:before:content-['+']">
+          <summary class="flex cursor-pointer list-none items-start gap-2.5 [&::-webkit-details-marker]:hidden">
+            <span class="flex-1 font-display text-[15px] font-semibold leading-[1.35] text-ink-900">{item.q}</span>
+            <span class="faq-glyph h-5 w-3.5 shrink-0 font-data text-base font-bold leading-tight text-terracotta-600 before:block" aria-hidden="true"></span>
+          </summary>
+          <p class="mt-2 font-body text-sm leading-[1.55] text-umber-600">{item.a}</p>
+        </details>
       ))}
-    </dl>
+    </div>
   </section>
 )}

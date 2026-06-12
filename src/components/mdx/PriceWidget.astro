@@ -1,49 +1,91 @@
 ---
+// The price block — price + freshness + CTA in one place. Matches the buy-box PriceWidget
+// (65:33): cream-100 card, big Rubik price (tabular), mono retailer label, muted-green
+// "IN STOCK" pill (meaning carried by the LABEL, not colour alone), primary + secondary
+// CTAs, and a mandatory "PRICE CHECKED <date>" mono stamp. Prices are the standard
+// strike-through price, never the new-user promo.
 import { gbp, getProduct, goHref, STORE_LABELS, type Store } from '../../lib/products';
 
 interface Props {
   productId: string;
   store?: Store;
+  /** Show the secondary "Compare on eBay UK" CTA (product buy-box). */
+  compareStore?: Store;
+  /** Override the "IN STOCK" pill (default: shown when a buy link exists). */
+  inStock?: boolean;
 }
 
-const { productId, store } = Astro.props;
+const { productId, store, compareStore, inStock } = Astro.props;
 const product = getProduct(productId);
 const primaryStore: Store | undefined =
   store ?? (product ? ((Object.keys(product.links) as Store[])[0]) : undefined);
 const available = !!(product && primaryStore && product.links[primaryStore]);
+const showStock = inStock ?? available;
+const compareAvailable = !!(product && compareStore && product.links[compareStore]);
+
+const dateFmt = product?.priceCheckedAt
+  ? new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+      .format(new Date(product.priceCheckedAt))
+      .toUpperCase()
+  : null;
 ---
 
 {product ? (
-  <aside class="not-prose my-6 rounded-md border border-sepia-200 bg-cream-100 p-5">
-    <div class="mb-3 flex items-center justify-between">
-      <div class="text-[11px] font-semibold uppercase tracking-[0.12em] text-umber-600">
-        {primaryStore ? STORE_LABELS[primaryStore] : product.brand ?? product.name}
+  <aside class="not-prose my-6 flex flex-col gap-2.5 rounded-md border border-sepia-200 bg-cream-100 p-5">
+    <div class="flex items-center gap-3">
+      <div class="flex flex-col gap-0.5">
+        <span class="font-display text-3xl font-bold tabular-nums leading-none text-ink-900">
+          {product.priceFromGBP !== undefined ? `from ${gbp.format(product.priceFromGBP)}` : 'Price varies'}
+        </span>
+        {primaryStore && (
+          <span class="font-data text-[10px] font-medium uppercase tracking-[0.1em] text-umber-600">
+            On {STORE_LABELS[primaryStore]}
+          </span>
+        )}
       </div>
+      {showStock && (
+        <span class="ml-auto inline-flex items-center gap-1.5 rounded-full bg-[#3e8a64] py-1 pl-2.5 pr-3">
+          <span class="h-1.5 w-1.5 rounded-full bg-white" aria-hidden="true"></span>
+          <span class="font-data text-[9px] font-bold uppercase tracking-[0.05em] text-white">In stock</span>
+        </span>
+      )}
     </div>
-    <div class="font-display text-4xl font-semibold tracking-tight tabular-nums text-ink-900">
-      {product.priceFromGBP !== undefined ? `from ${gbp.format(product.priceFromGBP)}` : 'Price varies'}
-    </div>
+
     <div
-      class="mt-1 hidden font-data text-xs text-umber-600"
+      class="hidden font-data text-xs text-umber-600"
       data-fx-hint
       data-gbp={product.priceFromGBP}
     ></div>
-    {product.priceCheckedAt && (
-      <div class="mt-1 font-data text-xs text-umber-600">price checked {product.priceCheckedAt}</div>
-    )}
+
     {available && primaryStore && (
       <a
         href={goHref(product.id, primaryStore)}
         rel="sponsored nofollow noopener"
         target="_blank"
-        aria-label={`Check ${product.name} price at ${STORE_LABELS[primaryStore]} — opens in new tab`}
-        class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-md bg-terracotta-600 px-5 py-3 text-cream-50 transition-colors hover:bg-terracotta-700"
+        aria-label={`Buy ${product.name} on ${STORE_LABELS[primaryStore]} — opens in new tab`}
+        class="inline-flex w-full items-center justify-center gap-2 rounded-md bg-terracotta-600 px-5 py-3.5 font-body text-[15px] font-bold text-white transition-colors hover:bg-terracotta-700"
       >
-        <span class="text-sm font-semibold uppercase tracking-[0.12em]">
-          Check price <span aria-hidden="true">&rarr;</span>
-        </span>
+        <span>Buy on {STORE_LABELS[primaryStore]}</span>
+        <span aria-hidden="true">&rarr;</span>
       </a>
     )}
+
+    {compareAvailable && compareStore && (
+      <a
+        href={goHref(product.id, compareStore)}
+        rel="sponsored nofollow noopener"
+        target="_blank"
+        aria-label={`Compare ${product.name} on ${STORE_LABELS[compareStore]} UK — opens in new tab`}
+        class="inline-flex w-full items-center justify-center rounded-md border-[1.5px] border-ink-900 bg-white px-5 py-3.5 font-body text-[15px] font-bold text-ink-900 transition-colors hover:bg-cream-100"
+      >
+        Compare on {STORE_LABELS[compareStore]} UK
+      </a>
+    )}
+
+    <p class="font-data text-[10px] leading-normal tracking-[0.02em] text-sepia-400">
+      {dateFmt && <>PRICE CHECKED {dateFmt}</>}
+      {dateFmt && ' · '}We may earn from qualifying purchases.
+    </p>
   </aside>
 ) : (
   <aside class="not-prose my-6 rounded-md border border-ochre-500 bg-cream-100 p-4 text-sm text-ink-900">

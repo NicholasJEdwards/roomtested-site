@@ -1,15 +1,21 @@
 ---
+// In-body affiliate disclosure strip — shown ABOVE the first CTA (never relied on the
+// footer alone). cream-100 rounded-md strip. Gated on SITE.affiliateActive so it only
+// appears once links are genuinely affiliate links (UK ASA / FTC): advertising a
+// disclosure before any commission exists would itself be misleading.
 import { SITE } from '../consts';
 ---
 
 {SITE.affiliateActive && (
   <aside
-    class="my-6 rounded-md border border-sepia-200 bg-cream-100 px-4 py-3 text-sm text-ink-900"
+    class="not-prose my-6 rounded-md border border-sepia-200 bg-cream-100 px-4 py-3 font-body text-sm leading-relaxed text-umber-600"
     role="note"
     aria-label="Affiliate disclosure"
   >
-    <strong>Affiliate disclosure:</strong> some links on this page are affiliate links — we
-    may earn a commission on qualifying purchases at no extra cost to you. Commission never
-    influences what we recommend. <a class="underline underline-offset-2" href="/disclosure">Read the full policy.</a>
+    <strong class="font-semibold text-ink-900">Affiliate disclosure:</strong> some links on this
+    page are affiliate links — as an AliExpress affiliate we may earn from qualifying purchases at
+    no extra cost to you. Prices are research estimates, correct on the date checked. Commission
+    never influences what we recommend.
+    <a class="underline underline-offset-2 hover:text-ink-900" href="/disclosure">Read the full policy.</a>
   </aside>
 )}

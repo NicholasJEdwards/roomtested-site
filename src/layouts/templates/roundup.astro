@@ -1,0 +1,110 @@
+---
+// Roundup / listicle layout (`template: 'roundup'`). Matches the roundup frame (62:4):
+// kicker (… · BUYING GUIDE) + H1 ("The N best …") + dek + "N tested" stamp, then ranked
+// #1…N BestOfPick mini-cards (the #1 pink-bordered), then the body prose, then Related.
+// Built only from gear actually tested → emits ItemList + articleLd + breadcrumbsLd.
+import type { CollectionEntry } from 'astro:content';
+import type { MarkdownHeading } from 'astro';
+
+import AffiliateDisclosure from '../../components/AffiliateDisclosure.astro';
+import AuthorStrip from '../../components/AuthorStrip.astro';
+import BestOfPick from '../../components/BestOfPick.astro';
+import Faq from '../../components/Faq.astro';
+import JsonLd from '../../components/JsonLd.astro';
+import LastUpdated from '../../components/LastUpdated.astro';
+import RelatedArticles from '../../components/RelatedArticles.astro';
+import { mdxComponents } from '../../lib/mdx-components';
+import { articleLd, breadcrumbsLd, itemListLd } from '../../lib/jsonld';
+import type { ArticleRef } from '../../lib/links';
+import { getProduct } from '../../lib/products';
+
+interface Props {
+  entry: CollectionEntry<'guides'>;
+  Content: any;
+  /** Accepted for route-dispatch parity; the roundup has no Toc. */
+  headings?: MarkdownHeading[];
+  related: ArticleRef[];
+}
+
+const { entry, Content, related } = Astro.props;
+const d = entry.data;
+const url = `/guides/${entry.id}`;
+const ogImage = `/cards/guides/${entry.id}/og.png`;
+const categoryLabel = d.category.replace(/-/g, ' ');
+const picks = d.picks ?? [];
+// ItemList from the picks (resolve names via the product registry where not overridden).
+const listItems = picks.map((p) => {
+  const product = getProduct(p.productId);
+  return { name: p.name ?? product?.name ?? p.productId, url };
+});
+---
+
+<JsonLd
+  data={[
+    articleLd({
+      title: d.title,
+      description: d.description,
+      url,
+      publishedAt: d.publishedAt,
+      updatedAt: d.updatedAt,
+      author: d.author,
+      image: ogImage,
+    }),
+    ...(listItems.length > 0 ? [itemListLd(listItems)] : []),
+    breadcrumbsLd([
+      { name: 'Home', href: '/' },
+      { name: 'Guides', href: '/guides' },
+      { name: d.title, href: url },
+    ]),
+  ]}
+/>
+
+<article class="mx-auto max-w-4xl py-12">
+  <nav class="text-sm text-umber-600" aria-label="Breadcrumb">
+    <a href="/" class="hover:underline">Home</a>
+    <span class="mx-1">&rsaquo;</span>
+    <a href="/guides" class="hover:underline">Guides</a>
+    <span class="mx-1">&rsaquo;</span>
+    <a href={`/c/${d.category}`} class="hover:underline">{categoryLabel}</a>
+  </nav>
+
+  <header class="mx-auto mt-5 max-w-3xl">
+    <div class="font-data text-[13px] font-medium uppercase tracking-[0.12em] text-terracotta-600">{categoryLabel} · Buying guide</div>
+    <h1 class="mt-2 font-display text-[28px] font-semibold leading-[1.18] tracking-tight text-ink-900 sm:text-[40px]">{d.title}</h1>
+    <p class="mt-3 font-body text-lg leading-[1.55] text-umber-600 sm:text-[19px]">{d.description}</p>
+    <div class="mt-3.5 font-data text-[11px] uppercase tracking-[0.05em] text-sepia-400">
+      <LastUpdated date={d.updatedAt ?? d.publishedAt} label="Updated" compact /> · {d.author}
+      {picks.length > 0 && <> · {picks.length} tested</>}
+    </div>
+  </header>
+
+  <AffiliateDisclosure />
+
+  {picks.length > 0 && (
+    <div class="mt-8 space-y-6">
+      {picks.map((p, i) => (
+        <BestOfPick
+          rank={i + 1}
+          productId={p.productId}
+          tier={p.tier}
+          name={p.name}
+          rating={p.rating}
+          blurb={p.blurb}
+          pros={p.pros}
+          cons={p.cons}
+          reviewHref={p.reviewHref}
+        />
+      ))}
+    </div>
+  )}
+
+  <div class="mx-auto mt-10 max-w-3xl font-body leading-[1.65] text-ink-900 [&>h2]:mt-10 [&>h2]:font-display [&>h2]:text-2xl [&>h2]:font-semibold [&>h2]:tracking-tight [&>h3]:mt-8 [&>h3]:font-display [&>h3]:text-xl [&>h3]:font-semibold [&>p]:mt-4 [&>ul]:mt-4 [&>ul]:list-disc [&>ul]:pl-5 [&>ol]:mt-4 [&>ol]:list-decimal [&>ol]:pl-5 [&>ul>li]:mt-1 [&>ol>li]:mt-1">
+    <Content components={mdxComponents} />
+  </div>
+
+  <div class="mx-auto max-w-3xl">
+    <Faq faq={d.faq} />
+    <RelatedArticles entries={related} />
+    <AuthorStrip author={d.author} />
+  </div>
+</article>

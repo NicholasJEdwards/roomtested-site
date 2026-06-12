@@ -4,6 +4,7 @@ import { getCollection, render } from 'astro:content';
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import ArticleStandard from '../../layouts/templates/article-standard.astro';
 import GuideHowto from '../../layouts/templates/guide-howto.astro';
+import Roundup from '../../layouts/templates/roundup.astro';
 import { getRelatedArticles } from '../../lib/links';
 
 export async function getStaticPaths() {
@@ -17,9 +18,12 @@ const d = guide.data;
 const ogImage = `/cards/guides/${guide.id}/og.png`;
 const related = await getRelatedArticles(guide);
 
-// guide-howto when there are steps (or the post asks for it); else the generic layout.
+// roundup when the post asks for it; guide-howto when there are steps (or it asks); else
+// the generic layout.
+const isRoundup = d.template === 'roundup';
 const useHowto =
-  d.template === 'guide-howto' || (d.template !== 'article-standard' && !!d.steps?.length);
+  !isRoundup &&
+  (d.template === 'guide-howto' || (d.template !== 'article-standard' && !!d.steps?.length));
 ---
 
 <BaseLayout
@@ -33,7 +37,9 @@ const useHowto =
   section={d.category.replace(/-/g, ' ')}
   tags={d.tags}
 >
-  {useHowto ? (
+  {isRoundup ? (
+    <Roundup entry={guide} Content={Content} headings={headings} related={related} />
+  ) : useHowto ? (
     <GuideHowto entry={guide} Content={Content} headings={headings} related={related} />
   ) : (
     <ArticleStandard entry={guide} Content={Content} headings={headings} related={related} kind="guide" />

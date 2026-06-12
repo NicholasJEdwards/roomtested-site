@@ -1,16 +1,29 @@
 ---
+// Primary retailer CTA. Matches the AffiliateButton swatch (32:10/12): primary = solid
+// pink fill + white Nunito-Bold centred label + trailing → (hover terracotta-700);
+// secondary = white fill + 1.5px ink outline + ink label. Never retailer-mimicking
+// colours. Disclosure always appears ABOVE the first instance (handled by templates).
 import { getProduct, goHref, STORE_LABELS, type Store } from '../../lib/products';
 
 interface Props {
   productId: string;
   store?: Store;
   label?: string;
+  variant?: 'primary' | 'secondary';
 }
 
-const { productId, store = 'aliexpress', label } = Astro.props;
+const { productId, store = 'aliexpress', label, variant = 'primary' } = Astro.props;
 const product = getProduct(productId);
 const available = !!product?.links[store];
 const retailer = STORE_LABELS[store];
+const text = label ?? `Check price on ${retailer}`;
+
+const base =
+  'not-prose my-4 inline-flex w-full max-w-md items-center justify-center gap-2 rounded-md px-5 py-3.5 font-body text-[15px] font-bold transition-colors';
+const variantCls =
+  variant === 'secondary'
+    ? 'border-[1.5px] border-ink-900 bg-white text-ink-900 hover:bg-cream-100'
+    : 'bg-terracotta-600 text-white hover:bg-terracotta-700';
 ---
 
 {available ? (
@@ -18,16 +31,14 @@ const retailer = STORE_LABELS[store];
     href={goHref(productId, store)}
     rel="sponsored nofollow noopener"
     target="_blank"
-    aria-label={`Check ${product?.name ?? productId} price at ${retailer} — opens in new tab`}
-    class="not-prose my-4 inline-flex w-full max-w-md items-center justify-between gap-3 rounded-md bg-terracotta-600 px-5 py-4 text-cream-50 transition-colors hover:bg-terracotta-700"
+    aria-label={`${text} — opens in new tab`}
+    class:list={[base, variantCls]}
   >
-    <span class="text-[11px] font-semibold uppercase tracking-[0.12em] opacity-80">{retailer}</span>
-    <span class="text-sm font-semibold uppercase tracking-[0.12em]">
-      {label ?? 'Check price'} <span aria-hidden="true">&rarr;</span>
-    </span>
+    <span>{text}</span>
+    {variant === 'primary' && <span aria-hidden="true">&rarr;</span>}
   </a>
 ) : (
-  <span class="not-prose my-4 inline-block text-sm text-umber-600">
+  <span class="not-prose my-4 inline-block font-body text-sm text-umber-600">
     [Link unavailable: {productId} / {store}]
   </span>
 )}

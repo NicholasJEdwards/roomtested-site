@@ -1,6 +1,8 @@
 ---
-// A clean spec table from keySpecs[]. No-ops when there are no specs so it's safe to
-// drop into any template unconditionally.
+// Single-product fact table. Matches the KeySpecs swatch (34:4) + product-page spec
+// table (66:16): white card, ink-900 header band with white mono title, zebra rows
+// (white / cream-100), Nunito SemiBold labels (umber) left, mono values (ink) right.
+// No-ops when there are no specs so it's safe to drop into any template unconditionally.
 interface Props {
   specs?: { label: string; value: string }[];
   title?: string;
@@ -12,23 +14,21 @@ const has = Array.isArray(specs) && specs.length > 0;
 
 {has && (
   <section class="not-prose my-8" aria-label={title}>
-    <div class="mb-3 font-data text-[11px] font-semibold uppercase tracking-[0.18em] text-umber-600">{title}</div>
-    <div class="overflow-hidden rounded-md border border-sepia-200 bg-cream-50">
-      <table class="w-full text-sm">
-        <tbody>
-          {specs!.map((spec) => (
-            <tr class="border-b border-sepia-200 last:border-b-0 odd:bg-cream-50 even:bg-cream-200">
-              <th
-                scope="row"
-                class="w-2/5 px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.12em] text-umber-600"
-              >
-                {spec.label}
-              </th>
-              <td class="px-4 py-3 font-data text-ink-900">{spec.value}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div class="overflow-hidden rounded-md border border-sepia-200 bg-white">
+      <div class="bg-ink-900 px-4 py-2.5">
+        <span class="font-data text-[11px] font-bold uppercase tracking-[0.14em] text-white">{title}</span>
+      </div>
+      {specs!.map((spec, i) => (
+        <div
+          class:list={[
+            'flex items-center gap-3 px-4 py-2.5',
+            i % 2 === 1 ? 'bg-cream-100' : 'bg-white',
+          ]}
+        >
+          <span class="flex-1 font-body text-[13px] font-semibold text-umber-600">{spec.label}</span>
+          <span class="text-right font-data text-xs text-ink-900">{spec.value}</span>
+        </div>
+      ))}
     </div>
   </section>
 )}

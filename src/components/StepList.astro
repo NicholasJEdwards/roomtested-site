@@ -1,5 +1,7 @@
 ---
-// Numbered steps + HowTo JSON-LD. No-ops when steps is absent/empty.
+// Numbered how-to steps + HowTo JSON-LD. Each step: a pink circular number badge (Rubik
+// Bold white digit) + Rubik-SemiBold title + Nunito-Sans body. No-ops when steps is
+// absent/empty. Honesty rules of ProductMedia apply to any step photo authors add.
 import { howToLd } from '../lib/jsonld';
 import JsonLd from './JsonLd.astro';
 
@@ -20,18 +22,18 @@ const has = Array.isArray(steps) && steps.length > 0;
   <section class="not-prose my-10" aria-label={title}>
     <JsonLd data={howToLd({ name: name ?? title, steps: steps!, totalTime })} />
     <h2 class="font-display text-2xl font-semibold tracking-tight text-ink-900">{title}</h2>
-    <ol class="mt-6 space-y-5">
+    <ol class="mt-6 space-y-7">
       {steps!.map((step, i) => (
         <li class="flex gap-4">
           <span
-            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-terracotta-600 font-data text-sm font-semibold text-cream-50"
+            class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-terracotta-600 font-display text-base font-bold text-white"
             aria-hidden="true"
           >
             {i + 1}
           </span>
-          <div class="flex-1 pt-0.5">
+          <div class="flex-1 pt-1">
             <div class="font-display text-lg font-semibold leading-snug text-ink-900">{step.name}</div>
-            <p class="mt-1 leading-7 text-umber-600">{step.text}</p>
+            <p class="mt-1 font-body leading-[1.62] text-umber-600">{step.text}</p>
           </div>
         </li>
       ))}

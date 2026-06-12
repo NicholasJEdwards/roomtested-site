@@ -1,57 +1,73 @@
 ---
-// Summary callout for reviews — the one-line verdict, optional rating, and a compact
-// pros/cons split. Sits at the top (review-standard) or wherever a template wants a
-// snapshot. Pros/cons are optional so it degrades to just the one-liner.
+// THE VERDICT box — the top-of-review TL;DR a skimmer (or an LLM) lifts. One per page.
+// Matches the VerdictBox swatch (33:4): pink "THE VERDICT" kicker, big Rubik score with
+// "/ N" beneath, one-line pitch, then a two-column "BUY IT IF" (ink +) / "SKIP IT IF"
+// (crimson –) split. Pros/cons are optional → degrades to score + one-liner (the compact
+// variant used by specs-led / comparison templates).
 interface Props {
   rating?: number;
+  /** Denominator shown after the score (review ratings are /5; design swatch shows /10). */
+  max?: number;
   oneLiner: string;
   pros?: string[];
   cons?: string[];
+  proLabel?: string;
+  conLabel?: string;
 }
 
-const { rating, oneLiner, pros, cons } = Astro.props;
+const {
+  rating,
+  max = 10,
+  oneLiner,
+  pros,
+  cons,
+  proLabel = 'Buy it if',
+  conLabel = 'Skip it if',
+} = Astro.props;
 const hasPros = Array.isArray(pros) && pros.length > 0;
 const hasCons = Array.isArray(cons) && cons.length > 0;
+const hasSplit = hasPros || hasCons;
 ---
 
 <aside
-  class="not-prose my-8 overflow-hidden rounded-md border border-sepia-200 bg-cream-100"
-  aria-label="Verdict"
+  class="not-prose my-8 flex flex-col gap-3.5 rounded-md border border-sepia-200 bg-cream-100 p-5"
+  aria-label="The verdict"
 >
-  <div class="flex flex-col gap-4 p-5 sm:flex-row sm:items-start sm:gap-6">
+  <div class="font-data text-[11px] font-bold uppercase tracking-[0.14em] text-terracotta-600">The verdict</div>
+
+  <div class="flex items-center gap-4">
     {rating !== undefined && (
-      <div class="flex shrink-0 flex-col items-center justify-center rounded-md border border-sepia-200 bg-cream-50 px-4 py-3 text-center">
-        <div class="font-display text-3xl font-semibold leading-none text-ink-900">{rating.toFixed(1)}</div>
-        <div class="mt-1 font-data text-[10px] uppercase tracking-wider text-umber-600">out of 5</div>
+      <div class="flex shrink-0 flex-col items-center leading-none">
+        <span class="font-display text-[44px] font-bold text-ink-900">{rating.toFixed(1)}</span>
+        <span class="mt-0.5 font-data text-[11px] font-medium text-umber-600">/ {max}</span>
       </div>
     )}
-    <div class="flex-1">
-      <div class="font-data text-[11px] font-semibold uppercase tracking-[0.18em] text-terracotta-600">The verdict</div>
-      <p class="mt-2 font-display text-lg leading-snug text-ink-900">{oneLiner}</p>
-    </div>
+    <p class="flex-1 font-display text-lg font-semibold leading-snug text-ink-900">{oneLiner}</p>
   </div>
 
-  {(hasPros || hasCons) && (
-    <div class="grid border-t border-sepia-200 sm:grid-cols-2">
-      <div class="border-b border-sepia-200 p-5 sm:border-b-0 sm:border-r">
-        <div class="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-pine-700">What we loved</div>
-        {hasPros ? (
-          <ul class="space-y-1.5 font-display text-[15px] leading-snug text-ink-900">
-            {pros!.map((p) => <li>— {p}</li>)}
-          </ul>
-        ) : (
-          <p class="font-data text-xs text-umber-600">—</p>
-        )}
+  {hasSplit && (
+    <div class="grid grid-cols-2 gap-5 pt-0.5">
+      <div class="flex flex-col gap-1.5">
+        <div class="font-data text-[11px] font-bold uppercase tracking-[0.1em] text-ink-900">{proLabel}</div>
+        {hasPros
+          ? pros!.map((p) => (
+              <div class="flex gap-1.5 text-sm">
+                <span class="w-3 shrink-0 font-body font-bold text-ink-900" aria-hidden="true">+</span>
+                <span class="flex-1 font-body leading-[1.4] text-umber-600">{p}</span>
+              </div>
+            ))
+          : <span class="font-data text-xs text-sepia-400">—</span>}
       </div>
-      <div class="p-5">
-        <div class="mb-2 text-[11px] font-semibold uppercase tracking-[0.12em] text-brick-600">What bugged us</div>
-        {hasCons ? (
-          <ul class="space-y-1.5 font-display text-[15px] leading-snug text-ink-900">
-            {cons!.map((c) => <li>— {c}</li>)}
-          </ul>
-        ) : (
-          <p class="font-data text-xs text-umber-600">—</p>
-        )}
+      <div class="flex flex-col gap-1.5">
+        <div class="font-data text-[11px] font-bold uppercase tracking-[0.1em] text-brick-600">{conLabel}</div>
+        {hasCons
+          ? cons!.map((c) => (
+              <div class="flex gap-1.5 text-sm">
+                <span class="w-3 shrink-0 font-body font-bold text-brick-600" aria-hidden="true">&ndash;</span>
+                <span class="flex-1 font-body leading-[1.4] text-umber-600">{c}</span>
+              </div>
+            ))
+          : <span class="font-data text-xs text-sepia-400">—</span>}
       </div>
     </div>
   )}
