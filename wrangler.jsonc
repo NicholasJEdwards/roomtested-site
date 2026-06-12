@@ -3,7 +3,7 @@
   // @cloudflare/vite-plugin) supplies the worker entry + assets settings itself and
   // emits a flattened deploy config during build, which `wrangler deploy` picks up.
   "$schema": "node_modules/wrangler/config-schema.json",
-  "name": "roomtested",
+  "name": "roomtested-site",
   "compatibility_date": "2026-06-10",
   "compatibility_flags": ["nodejs_compat"],
   "observability": {
