@@ -28,6 +28,7 @@ const SIZES = {
   og: { width: 1200, height: 630 },
   pin: { width: 1000, height: 1500 },
   square: { width: 1080, height: 1080 },
+  story: { width: 1080, height: 1920 }, // 9:16 — IG/FB stories (see safe-area padding in cardTree)
 };
 
 function el(type, style, children) {
@@ -35,9 +36,14 @@ function el(type, style, children) {
 }
 
 function cardTree({ size, title, description, category, kind }) {
-  const tall = size === 'pin';
-  const titleSize = tall ? 72 : size === 'square' ? 64 : 60;
-  const pad = tall ? 72 : 64;
+  const story = size === 'story';
+  const tall = size === 'pin' || story;
+  const titleSize = story ? 84 : size === 'pin' ? 72 : size === 'square' ? 64 : 60;
+  // Story safe area: the platform overlays UI chrome top & bottom (avatar/name up top,
+  // a reply/like bar across the bottom ~250px). Keep ALL text inside the centre band by
+  // padding the column generously top/bottom; the bottom pad clears the reply bar so the
+  // footer (brand + byline) lands well above it. Other sizes keep the original square pad.
+  const pad = story ? '260px 80px 300px' : tall ? 72 : 64;
   const kicker = `${category.replace(/-/g, ' ')} · ${kind}`.toUpperCase();
 
   return el(
@@ -56,28 +62,32 @@ function cardTree({ size, title, description, category, kind }) {
     },
     [
       el('div', { display: 'flex', flexDirection: 'column' }, [
-        el('div', { fontSize: tall ? 30 : 26, letterSpacing: 4, color: '#DB2777', display: 'flex' }, kicker),
+        el('div', { fontSize: story ? 34 : tall ? 30 : 26, letterSpacing: 4, color: '#DB2777', display: 'flex' }, kicker),
         el(
           'div',
-          { fontSize: titleSize, fontWeight: 700, lineHeight: 1.12, marginTop: 28, display: 'flex' },
+          { fontSize: titleSize, fontWeight: 700, lineHeight: 1.12, marginTop: story ? 40 : 28, display: 'flex' },
           title
         ),
         ...(description
           ? [
               el(
                 'div',
-                { fontSize: tall ? 34 : 30, lineHeight: 1.35, marginTop: 28, color: '#3F3F46', display: 'flex' },
+                { fontSize: story ? 38 : tall ? 34 : 30, lineHeight: 1.35, marginTop: story ? 40 : 28, color: '#3F3F46', display: 'flex' },
                 description
               ),
             ]
           : []),
       ]),
+      // Story footer stacks (narrow 920px text column) so the byline never clips; wide
+      // formats keep brand + byline on one row.
       el(
         'div',
-        { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: tall ? 30 : 26 },
+        story
+          ? { display: 'flex', flexDirection: 'column', fontSize: 32 }
+          : { display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: tall ? 30 : 26 },
         [
           el('div', { fontWeight: 700, color: '#09090B', display: 'flex' }, SITE_NAME),
-          el('div', { color: '#3F3F46', display: 'flex' }, `Tested by ${AUTHOR} · roomtested.com`),
+          el('div', { color: '#3F3F46', display: 'flex', ...(story ? { marginTop: 8 } : {}) }, `Tested by ${AUTHOR} · roomtested.com`),
         ]
       ),
     ]
