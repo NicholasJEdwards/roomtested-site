@@ -2,6 +2,7 @@
   "products": [
     {
       "id": "fanmi-i226-2-5g-nic",
+      "image": "/img/products/fanmi-i226-2-5g-nic.png",
       "name": "FANMI I226-T2 PCIe x1 RJ45 Dual Port 2.5G Network Card Intel I226-V Gigabit Ethernet 100/1000M/2500M 2Port LAN Adapter For PC",
       "category": "networking",
       "links": {

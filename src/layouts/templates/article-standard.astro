@@ -8,6 +8,7 @@ import type { MarkdownHeading } from 'astro';
 
 import AffiliateDisclosure from '../../components/AffiliateDisclosure.astro';
 import AuthorStrip from '../../components/AuthorStrip.astro';
+import ProductMedia from '../../components/ProductMedia.astro';
 import Faq from '../../components/Faq.astro';
 import JsonLd from '../../components/JsonLd.astro';
 import KeySpecs from '../../components/KeySpecs.astro';
@@ -30,6 +31,7 @@ interface Props {
 
 const { entry, Content, headings, related, kind } = Astro.props;
 const d = entry.data as CollectionEntry<'guides'>['data'] & CollectionEntry<'comparisons'>['data'];
+const heroSrc = d.heroImage;
 const collection = kind === 'guide' ? 'guides' : 'comparisons';
 const sectionName = kind === 'guide' ? 'Guides' : 'Comparisons';
 const url = `/${collection}/${entry.id}`;
@@ -79,6 +81,10 @@ const ogImage = `/cards/${collection}/${entry.id}/og.png`;
   </header>
 
   <AffiliateDisclosure />
+
+  {heroSrc && (
+    <ProductMedia kind="listing" src={heroSrc} alt={d.title} ratio="3/2" priority class="mt-6" />
+  )}
 
   <Toc headings={headings} />
 
